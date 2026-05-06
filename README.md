@@ -1,5 +1,9 @@
 # SuperOC Memory Stack
 
+[![GitHub stars](https://img.shields.io/github/stars/muntasirrmahdi/superoc?style=social)](https://github.com/muntasirrmahdi/superoc/stargazers)
+[![GitHub license](https://img.shields.io/github/license/muntasirrmahdi/superoc)](https://github.com/muntasirrmahdi/superoc/blob/main/LICENSE)
+[![Bash](https://img.shields.io/badge/Language-Bash-4EAA25.svg)](https://www.gnu.org/software/bash/)
+
 A philosophical prototype exploring how to shift LLM agent memory from the prompt level to the OS level. 
 
 **Disclaimer**: This is a personal experiment / proof-of-concept. It is not currently meant for mission-critical production environments.
