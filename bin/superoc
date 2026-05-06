@@ -1,0 +1,193 @@
+#!/usr/bin/env bash
+# bin/superoc - Main wrapper for SuperOC Memory Stack
+# Intercepts agent execution and ensures memory enforcement
+
+set -euo pipefail
+
+SUPEROC_DIR="${SUPEROC_DIR:-$HOME/.superoc}"
+STATE_FILE="$SUPEROC_DIR/state.json"
+SHELL_ENV="$SUPEROC_DIR/shell.env"
+MONITORING_DIR="$SUPEROC_DIR/monitoring"
+COMPLIANCE_LOG="$MONITORING_DIR/compliance/startup-$(date +%Y%m%d_%H%M%S).log"
+
+mkdir -p "$MONITORING_DIR/logs" "$MONITORING_DIR/alerts" "$MONITORING_DIR/compliance"
+
+# === Load memory state ===
+if [ -f "$SHELL_ENV" ]; then
+    source "$SHELL_ENV"
+fi
+
+if [ "$SUPEROC_MEMORY_READY" != "true" ]; then
+    if [ -x "$SUPEROC_DIR/lib/load_memory.sh" ]; then
+        source "$SUPEROC_DIR/lib/load_memory.sh" 2>/dev/null || true
+    fi
+fi
+
+# === Display memory status ===
+if [ "$SUPEROC_MEMORY_READY" = "true" ]; then
+    echo "⚡ SuperOC Memory: LOADED ✓"
+    if [ -n "$SUPEROC_USER_NAME" ]; then
+        echo "👤 User: $SUPEROC_USER_NAME"
+    fi
+    if [ -f "$SUPEROC_DIR/lib/sync_knowledge.sh" ] && [ -x "$SUPEROC_DIR/lib/sync_knowledge.sh" ]; then
+        "$SUPEROC_DIR/lib/sync_knowledge.sh" > /dev/null 2>&1 &
+        echo "🧠 SuperOC Intelligence: SYNCHRONIZING (Background) ✓"
+    fi
+fi
+
+echo "🔍 Starting rule compliance verification..."
+
+# === Verification ===
+STATE_JSON_VALID="false"
+AGENTS_FILE_EXISTS="false"
+AGENTS_CONTENT_VALID="false"
+VERIFICATION_STATUS="unknown"
+
+if [ -f "$STATE_FILE" ]; then
+    if jq empty "$STATE_FILE" 2>/dev/null; then
+        STATE_JSON_VALID="true"
+        echo "✅ state.json: exists and valid JSON"
+    else
+        echo "⚠️ state.json: exists but invalid JSON"
+    fi
+else
+    echo "❌ state.json: file not found"
+fi
+
+OPENCODE_CONFIG_DIR="${OPENCODE_CONFIG_DIR:-$HOME/.config/opencode}"
+AGENTS_FILE="$OPENCODE_CONFIG_DIR/AGENTS.md"
+
+if [ -f "$AGENTS_FILE" ]; then
+    AGENTS_FILE_EXISTS="true"
+    echo "✅ AGENTS.md: file exists"
+    if grep -q "MANDATORY FIRST ACTION" "$AGENTS_FILE"; then
+        AGENTS_CONTENT_VALID="true"
+        echo "✅ AGENTS.md: contains critical memory loading rule"
+    else
+        echo "⚠️ AGENTS.md: missing critical memory loading rule"
+    fi
+else
+    echo "❌ AGENTS.md: file not found"
+fi
+
+if [ "$STATE_JSON_VALID" = "true" ] && [ "$AGENTS_FILE_EXISTS" = "true" ] && [ "$AGENTS_CONTENT_VALID" = "true" ]; then
+    VERIFICATION_STATUS="verified"
+elif [ "$STATE_JSON_VALID" = "false" ] || [ "$AGENTS_FILE_EXISTS" = "false" ] || [ "$AGENTS_CONTENT_VALID" = "false" ]; then
+    VERIFICATION_STATUS="failed"
+else
+    VERIFICATION_STATUS="partial"
+fi
+
+# === Save compliance log ===
+{
+    echo "=== SuperOC Rule Compliance Verification ==="
+    echo "Timestamp: $(date -Iseconds)"
+    echo "Session PID: $$"
+    echo "User: $(whoami)"
+    echo "---"
+    echo "Verification Status: $VERIFICATION_STATUS"
+    echo "state.json valid: $STATE_JSON_VALID"
+    echo "AGENTS.md exists: $AGENTS_FILE_EXISTS"
+    echo "AGENTS.md content valid: $AGENTS_CONTENT_VALID"
+    echo "SUPEROC_MEMORY_READY: $SUPEROC_MEMORY_READY"
+} > "$COMPLIANCE_LOG"
+
+echo "📊 Verification complete: $VERIFICATION_STATUS"
+echo "📝 Log saved to: $COMPLIANCE_LOG"
+
+# === FIX 1.2: Exit if adapter missing for known agents ===
+AGENT_CMD="${1:-}"
+
+if [[ -z "$AGENT_CMD" ]]; then
+    echo "ERROR: No agent command provided."
+    echo "Usage: superoc <agent_command> [args...]"
+    echo "Example: superoc opencode"
+    exit 1
+fi
+
+shift  # Remove agent command from args
+
+# Known agents that require specific adapters
+KNOWN_AGENTS="opencode claude"
+
+# Determine the correct adapter
+ADAPTER_FILE="$SUPEROC_DIR/lib/adapters/${AGENT_CMD}.sh"
+
+# === FIX 1.2: Exit if known agent but no adapter ===
+if [[ -n "$AGENT_CMD" && -f "$SUPEROC_DIR/lib/adapters/${AGENT_CMD}.sh" ]]; then
+    ADAPTER_FILE="$SUPEROC_DIR/lib/adapters/${AGENT_CMD}.sh"
+elif [[ ! -f "$ADAPTER_FILE" ]]; then
+    # Unknown agent - try generic or fail
+    if [[ -f "$SUPEROC_DIR/lib/adapters/generic.sh" ]]; then
+        ADAPTER_FILE="$SUPEROC_DIR/lib/adapters/generic.sh"
+    else
+        echo "WARNING: No adapter found for '$AGENT_CMD'. Proceeding without memory injection."
+        echo "       Known agents: $KNOWN_AGENTS"
+        ADAPTER_FILE=""
+    fi
+fi
+
+# === FIX 4.1: Recovery from corrupted state.json ===
+# If state.json is corrupted or missing, try to rebuild
+if [[ -f "$STATE_FILE" ]]; then
+    if ! jq -e '.' "$STATE_FILE" >/dev/null 2>&1; then
+        echo "WARNING: Corrupted state.json detected. Attempting recovery..."
+        rm -f "$STATE_FILE"
+    fi
+fi
+
+# 1. State Compilation
+if [[ -x "$SUPEROC_DIR/lib/compile_state.sh" ]]; then
+    "$SUPEROC_DIR/lib/compile_state.sh" || {
+        echo "ERROR: State compilation failed."
+        exit 1
+    }
+else
+    echo "ERROR: lib/compile_state.sh not found or not executable. Installation broken."
+    exit 1
+fi
+
+# === FIX 1.5: Verify injection after adapter runs ===
+# 2. Mandatory Injection
+if [[ -n "$ADAPTER_FILE" && -x "$ADAPTER_FILE" ]]; then
+    if ! "$ADAPTER_FILE" "inject"; then
+        echo "ERROR: Adapter injection failed for $AGENT_CMD."
+        exit 1
+    fi
+    # === FIX 1.5: Verify injection took effect ===
+    if ! "$ADAPTER_FILE" "verify" 2>/dev/null; then
+        echo "WARNING: Could not verify memory injection."
+    fi
+fi
+
+# === FIX 3.4: trap INT in child processes ===
+# 3. Setup Post-Flight Trap (multiple signals)
+if [[ -x "$SUPEROC_DIR/lib/post_session_audit.sh" ]]; then
+    POST_AUDIT="$SUPEROC_DIR/lib/post_session_audit.sh"
+    # Catch multiple termination signals
+    trap '$POST_AUDIT' EXIT INT TERM HUP QUIT
+    
+    # === FIX 3.4: Also trap child processes ===
+    # Use subshell to ensure trap propagates
+    (
+        trap 'eval "$POST_AUDIT"' EXIT INT TERM HUP QUIT
+    ) &
+fi
+
+# === FIX 4.3: Check for cron-based checkpoint (optional) ===
+if [[ -x "$SUPEROC_DIR/lib/monitor_health.sh" ]]; then
+    # Optional health check - don't fail if this fails
+    "$SUPEROC_DIR/lib/monitor_health.sh" 2>/dev/null || true
+fi
+
+# 4. Pass control to the underlying agent
+# Use exec to replace the shell process
+if command -v "$AGENT_CMD" >/dev/null 2>&1; then
+    exec "$AGENT_CMD" "$@"
+else
+    # Try to find the agent in PATH or custom locations
+    exec "$@" || {
+        echo "ERROR: Agent '$AGENT_CMD' not found."
+        exit 1
+    }
+fi

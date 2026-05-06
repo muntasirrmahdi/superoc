@@ -1,0 +1,6 @@
+state.json
+*.log
+.DS_Store
+node_modules/
+__pycache__/
+.lock

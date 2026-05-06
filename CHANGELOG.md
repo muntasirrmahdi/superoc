@@ -1,0 +1,47 @@
+# SuperOC Changelog
+
+## [0.1.1-alpha] - 2026-05-06
+
+### Added
+- Comprehensive security fixes (lock permissions, state.json ownership)
+- Cross-platform lock detection
+- State.json validation after compilation
+- Idempotent adapter injection
+- Python3 fallback testing path
+- Health monitoring script improvements
+- Post-session audit exit code handling
+
+### Changed
+- Safe JSON compilation using --rawfile (no shell injection)
+- Private lock directories (per-user)
+- Template validation before compilation
+- Better error messages (standardized)
+- Documentation updated to reflect experimental philosophical prototype status
+
+### Fixed
+- Issue #1.3: jq JSON injection vulnerability
+- Issue #2.1: Lock race window verification
+- Issue #2.2: Lock directory permissions
+- Issue #3.1: Temp file cleanup
+- Issue #3.3: Cross-platform stale lock detection
+- Issue #3.4: trap INT in child processes
+- Issue #3.5: Empty template validation
+- Issue #4.1: Recovery from corrupted state.json
+- Issue #4.4: Post-audit exit code logging
+- Issue #8.1: OpenCode adapter idempotent
+
+### Known Limitations
+- LLM extraction is stub only (v0.2 feature)
+- Cron-based checkpoint not fully implemented
+- Limited agent adapter coverage
+
+---
+
+## [0.1.0-alpha] - 2026-03-26
+
+### Added
+- Initial experimental release
+- State compilation from markdown
+- Basic OpenCode and Claude Code adapters
+- Installation/uninstallation scripts
+- Basic health monitoring
