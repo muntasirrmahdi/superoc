@@ -91,6 +91,20 @@ else
     echo "{}" > "$WIKILINKS_TMP"
 fi
 
+# Load daily logs (last 7 days)
+DAILY_TMP="$STATE_FILE.daily.tmp"
+DAILY_LOGS_DIR="$SUPEROC_DIR/logs"
+DAYS_LOADED=0
+if [ -d "$DAILY_LOGS_DIR" ]; then
+    for i in 0 1 2 3 4 5 6; do
+        logdate=$(date -d "-$i days" +%Y-%m-%d 2>/dev/null || date -v-${i}d +%Y-%m-%d 2>/dev/null)
+        if [ -f "$DAILY_LOGS_DIR/$logdate.md" ]; then
+            DAYS_LOADED=$((DAYS_LOADED + 1))
+        fi
+    done
+    find "$DAILY_LOGS_DIR" -maxdepth 1 -name "*.md" -mtime -7 2>/dev/null | wc -l | tr -d ' ' > /dev/null
+fi
+
 if command -v jq >/dev/null 2>&1; then
     # Use --rawfile to safely read file contents as raw text into jq strings
     jq -n \
@@ -101,6 +115,7 @@ if command -v jq >/dev/null 2>&1; then
         --rawfile understanding "$UNDERSTANDING_TMP" \
         --rawfile wikilinks "$WIKILINKS_TMP" \
         --arg timestamp "$TIMESTAMP" \
+        --arg days "$DAYS_LOADED" \
         '{
             user: { content: ($user // "") },
             identity: { content: ($identity // "") },
@@ -108,6 +123,8 @@ if command -v jq >/dev/null 2>&1; then
             learning_model: { content: ($learning // "") },
             understanding_model: { content: ($understanding // "") },
             wikilinks_graph: (try fromjson($wikilinks) catch {}),
+            daily: { logs: {} },
+            days_loaded: ($days | tonumber),
             _meta: { last_compiled: $timestamp }
         }' > "$STATE_FILE.tmp"
     
