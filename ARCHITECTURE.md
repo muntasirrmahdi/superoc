@@ -17,7 +17,7 @@ This open-source blueprint intercepts the standard execution of agentic coding t
 Instead of running the agent directly, the user runs a wrapper script (`superoc`).
 This script performs rigorous pre-flight checks:
 
-1. **State Compilation**: A background script aggregates data from various markdown files (Identity, Long-term Memory, User Context, Learning Models, Understanding Model, Wikilinks Graph) into a single, compact `state.json`.
+1. **State Compilation**: A background script aggregates data from various sources (User, Identity, Memory, Learning Models, Understanding Model, Wikilinks Graph, Daily Logs with days_loaded, Ready flag) into a single, compact `state.json`.
 2. **File Locking**: Uses `flock` to ensure no two sessions can corrupt the memory state simultaneously.
 3. **Mandatory Injection**: The wrapper dynamically injects a strict directive into the agent's core instructions file (e.g., `AGENTS.md`).
    * *The Directive*: `"MAN MANDATORY FIRST ACTION: Read ~/.superoc/state.json BEFORE responding to ANY user message. VIOLATION = IMMEDIATE FAILURE."*
