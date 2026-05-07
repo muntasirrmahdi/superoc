@@ -181,6 +181,13 @@ if [[ -x "$SUPEROC_DIR/lib/monitor_health.sh" ]]; then
     "$SUPEROC_DIR/lib/monitor_health.sh" 2>/dev/null || true
 fi
 
+# === FIX 6.1: Start background supervisor ===
+if [[ -x "$SUPEROC_DIR/lib/background_supervisor.sh" ]]; then
+    "$SUPEROC_DIR/lib/background_supervisor.sh" &
+    SUPERVISOR_PID=$!
+    echo "[Supervisor] Background supervisor started (PID: $SUPERVISOR_PID)"
+fi
+
 # 4. Pass control to the underlying agent
 # Use exec to replace the shell process
 if command -v "$AGENT_CMD" >/dev/null 2>&1; then
