@@ -113,7 +113,7 @@ if command -v jq >/dev/null 2>&1; then
         --rawfile memory "$MEMORY_TMP" \
         --rawfile learning "$LEARNING_TMP" \
         --rawfile understanding "$UNDERSTANDING_TMP" \
-        --rawfile wikilinks "$WIKILINKS_TMP" \
+        --slurpfile wikilinks "$WIKILINKS_TMP" \
         --arg timestamp "$TIMESTAMP" \
         --arg days "$DAYS_LOADED" \
         '{
@@ -122,7 +122,7 @@ if command -v jq >/dev/null 2>&1; then
             memory: { content: ($memory // "") },
             learning_model: { content: ($learning // "") },
             understanding_model: { content: ($understanding // "") },
-            wikilinks_graph: {},
+            wikilinks_graph: ($wikilinks[0] // {}),
             daily: { logs: {} },
             days_loaded: ($days | tonumber),
             _meta: { last_compiled: $timestamp }
