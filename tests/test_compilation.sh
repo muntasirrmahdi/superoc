@@ -104,6 +104,42 @@ if [ -f "$STATE_FILE" ]; then
     else
         fail "memory.content missing"
     fi
+    
+    if jq -e '.learning_model.content' "$STATE_FILE" >/dev/null 2>&1; then
+        pass "learning_model.content exists"
+    else
+        fail "learning_model.content missing"
+    fi
+    
+    if jq -e '.understanding_model.content' "$STATE_FILE" >/dev/null 2>&1; then
+        pass "understanding_model.content exists"
+    else
+        fail "understanding_model.content missing"
+    fi
+    
+    if jq -e '.wikilinks_graph' "$STATE_FILE" >/dev/null 2>&1; then
+        pass "wikilinks_graph exists"
+    else
+        fail "wikilinks_graph missing"
+    fi
+    
+    if jq -e '.daily.logs' "$STATE_FILE" >/dev/null 2>&1; then
+        pass "daily.logs exists"
+    else
+        fail "daily.logs missing"
+    fi
+    
+    if jq -e '.days_loaded' "$STATE_FILE" >/dev/null 2>&1; then
+        pass "days_loaded exists"
+    else
+        fail "days_loaded missing"
+    fi
+    
+    if jq -e '.ready' "$STATE_FILE" >/dev/null 2>&1; then
+        pass "ready exists"
+    else
+        fail "ready missing"
+    fi
 fi
 
 # Test 5: Adapter verification
