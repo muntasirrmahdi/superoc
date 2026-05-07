@@ -112,9 +112,28 @@ if [[ -x "$SUPEROC_DIR/lib/load_memory.sh" ]]; then
 fi
 
 echo ""
+echo "=> Setting up cron automation..."
+CRON_TMP="/tmp/superoc_cron_$(date +%s)"
+crontab -l 2>/dev/null > "$CRON_TMP" || true
+
+SUPEROC_CRON="# SuperOC Memory Stack - Automated tasks
+0 2 * * * $SUPEROC_DIR/lib/backup.sh >> $SUPEROC_DIR/monitoring/logs/backup_cron.log 2>&1
+0 * * * * $SUPEROC_DIR/lib/sync_knowledge.sh >> $SUPEROC_DIR/monitoring/logs/sync_cron.log 2>&1
+*/15 * * * * $SUPEROC_DIR/lib/monitor_health.sh >> $SUPEROC_DIR/monitoring/logs/health_cron.log 2>&1"
+
+if ! grep -q "SuperOC Memory Stack" "$CRON_TMP" 2>/dev/null; then
+    echo "$SUPEROC_CRON" >> "$CRON_TMP"
+    crontab "$CRON_TMP"
+    echo "=> Cron jobs installed (daily backup, hourly sync, health check every 15 min)"
+else
+    echo "=> Cron jobs already installed"
+fi
+rm -f "$CRON_TMP"
+
+echo ""
 echo "[OK] SuperOC Installed Successfully!"
 echo "   Please restart your terminal or run: source ${RC_FILE:-~/.bashrc}"
-echo "   To start an agent with memory enforced, type: opencode"
+echo "   To start an agent with memory enforced, type: open-code"
 echo ""
 echo "   NOTE: Edit ~/.superoc/templates/user.md first to set your identity."
 echo "   Then your memory will be loaded each session."
