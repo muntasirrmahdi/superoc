@@ -18,6 +18,16 @@ cleanup_and_exit() {
 # Create logs directory
 mkdir -p "$LOG_DIR"
 
+CHECKPOINT_PID_FILE="$SUPEROC_DIR/monitoring/session_checkpoint.pid"
+if [ -f "$CHECKPOINT_PID_FILE" ]; then
+    CHECKPOINT_PID=$(cat "$CHECKPOINT_PID_FILE")
+    if kill -0 "$CHECKPOINT_PID" 2>/dev/null; then
+        kill "$CHECKPOINT_PID" 2>/dev/null || true
+        log "Checkpoint process (PID: $CHECKPOINT_PID) stopped"
+    fi
+    rm -f "$CHECKPOINT_PID_FILE"
+fi
+
 log() {
     echo "$(date '+%Y-%m-%d %H:%M:%S'): $1" | tee -a "$LOG_FILE"
 }

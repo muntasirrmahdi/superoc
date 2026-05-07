@@ -192,6 +192,13 @@ fi
 export SUPEROC_ACTIVE=1
 echo "[Guard] Bypass guard active (SUPEROC_ACTIVE=1)"
 
+# === FIX 8.1: Start periodic session checkpoint ===
+if [[ -x "$SUPEROC_DIR/lib/session_checkpoint.sh" ]]; then
+    CHECKPOINT_INTERVAL="${CHECKPOINT_INTERVAL:-300}" "$SUPEROC_DIR/lib/session_checkpoint.sh" &
+    CHECKPOINT_PID=$!
+    echo "[Checkpoint] Periodic checkpoint started (PID: $CHECKPOINT_PID, interval: ${CHECKPOINT_INTERVAL:-300}s)"
+fi
+
 # 4. Pass control to the underlying agent
 # Use exec to replace the shell process
 if command -v "$AGENT_CMD" >/dev/null 2>&1; then
