@@ -141,3 +141,34 @@ Injecting the "MUST READ" rule into wildly different agent configurations (OpenC
 
 **Mitigation Protocol:**
 Instead of raw sed/awk replacements on arbitrary config files, the architecture defines a standard adapter interface. Each supported agent gets a dedicated integration script (`adapters/opencode.sh`, `adapters/claudecode.sh`) that understands the exact injection boundary for that specific tool.
+
+### 6. Runtime Supervision Gap
+The wrapper uses `exec "$AGENT_CMD"` to replace the shell process with the agent. Once `exec` runs, the SuperOC wrapper ceases to exist as a running process. While an `EXIT` trap is set before `exec` (to trigger `post_session_audit.sh`), there is **zero runtime supervision** during the agent's execution.
+
+The compliance verification (lines 40-79 of `bin/superoc`) only checks:
+- `state.json` exists and is valid JSON
+- `AGENTS.md` exists and contains "MANDATORY FIRST ACTION"
+
+**What it does NOT verify:** Whether the agent actually reads `state.json` or follows the injected directive. The agent could completely ignore the memory state, and SuperOC would never know.
+
+**Bypass Vulnerability:** If a user runs the agent directly (e.g., `opencode` instead of `superoc opencode`), all memory compilation, injection, and verification are skipped entirely.
+
+**Mitigation Protocol:**
+- Document this limitation clearly (this section)
+- Users should alias the agent command to run through `superoc`
+- Future versions may explore `ptrace` or LD_PRELOAD to enforce loading, though these are complex and platform-specific
+
+### 7. Learning Loop Stub (v0.2.0-alpha)
+The architecture describes a "Post-Flight Trap" with "Background Distillation" using an LLM to extract facts from session transcripts. In the current v0.2.0-alpha implementation, this is a **stub**:
+
+- `lib/post_session_audit.sh` (lines 54-60): Logs "LLM extraction simulated" but performs no actual LLM call
+- `lib/extract_session.sh`: Uses keyword matching (grep) for predefined terms like "FIXED", "IMPLEMENTED" - not semantic understanding
+- `lib/sync_knowledge.sh`: Explicitly labeled as a placeholder for users to integrate their own logic
+
+**What works:** Basic keyword extraction and session logging.
+**What does not work yet:** Automatic memory updates, semantic fact extraction, LLM-powered learning.
+
+**Mitigation Protocol:**
+- This is documented as a known limitation in the CHANGELOG and README
+- Users wanting automatic memory updates should implement `sync_knowledge.sh` with their preferred LLM API
+- The `scripts/session-end-updater.sh` provides a basic template for appending session counts to `learning-model.md`
