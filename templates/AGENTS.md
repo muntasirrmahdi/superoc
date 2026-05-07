@@ -6,7 +6,7 @@
 
 1. If `~/.superoc/state.json` exists, read it FIRST
 2. If it doesn't exist, run `superoc compile` to create it
-3. Load the `user`, `identity`, and `memory` content into your context
+3. Load all 8 fields into your context: user, identity, memory, learning_model, understanding_model, wikilinks_graph, daily.logs, days_loaded
 
 **VIOLATION = Session starts in amnesiac state.**
 
@@ -32,6 +32,7 @@ Your state.json contains:
 - `learning_model.content` - What you've learned
 - `understanding_model.content` - Your understanding of the user
 - `wikilinks_graph` - Entity knowledge graph
+- `days_loaded` - Number of daily logs loaded
 
 ---
 
