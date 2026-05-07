@@ -31,6 +31,7 @@ Your state.json contains:
 - `daily.logs` - Last 7 days of session activity
 - `learning_model.content` - What you've learned
 - `understanding_model.content` - Your understanding of the user
+- `wikilinks_graph` - Entity knowledge graph
 
 ---
 
