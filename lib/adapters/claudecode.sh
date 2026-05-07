@@ -29,6 +29,11 @@ create_system_prompt() {
     USER_CONTENT=$(jq -r '.user.content // "User"' "$STATE_FILE" 2>/dev/null || echo "User")
     IDENTITY_CONTENT=$(jq -r '.identity.content // "AI Assistant"' "$STATE_FILE" 2>/dev/null || echo "AI Assistant")
     MEMORY_CONTENT=$(jq -r '.memory.content // ""' "$STATE_FILE" 2>/dev/null || echo "")
+    LEARNING_CONTENT=$(jq -r '.learning_model.content // ""' "$STATE_FILE" 2>/dev/null || echo "")
+    UNDERSTANDING_CONTENT=$(jq -r '.understanding_model.content // ""' "$STATE_FILE" 2>/dev/null || echo "")
+    WIKILINKS_SUMMARY=$(jq -r '.wikilinks_graph.entities | length' "$STATE_FILE" 2>/dev/null || echo "0")
+    DAILY_SUMMARY=$(jq -r '.daily.logs | keys | length' "$STATE_FILE" 2>/dev/null || echo "0")
+    DAYS_LOADED=$(jq -r '.days_loaded // 0' "$STATE_FILE" 2>/dev/null || echo "0")
     
     cat > "$SUPEROC_PROMPT" << EOF
 # User Context
@@ -39,6 +44,17 @@ $IDENTITY_CONTENT
 
 # Long-term Memory
 $MEMORY_CONTENT
+
+# Learning Model
+$LEARNING_CONTENT
+
+# Understanding Model
+$UNDERSTANDING_CONTENT
+
+# Knowledge Graph
+Wikilinks entities: $WIKILINKS_SUMMARY
+Daily logs loaded: $DAILY_SUMMARY days
+Days loaded: $DAYS_LOADED
 
 ---
 CRITICAL: Read this file before responding. VIOLATION = IMMEDIATE FAILURE.
