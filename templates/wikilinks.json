@@ -2,7 +2,8 @@
   "comment": "SuperOC Wikilinks Parser Configuration",
   "sources": [
     "~/projects",
-    "~/docs"
+    "~/docs",
+    "~/.opencode/research"
   ],
   "exclude": [
     "*.pyc",
