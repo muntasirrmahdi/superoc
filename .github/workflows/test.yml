@@ -1,0 +1,27 @@
+name: CI Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y jq python3
+    
+    - name: Run tests
+      run: bash tests/test_compilation.sh
+      env:
+        CI: true
+        DEBIAN_FRONTEND: noninteractive
+        GIT_TERMINAL_PROMPT: "0"
+        GCM_INTERACTIVE: never
