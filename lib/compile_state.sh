@@ -16,7 +16,7 @@ MEMORY_TMP="$STATE_FILE.memory.tmp"
 
 # Cleanup function for temp files
 cleanup_temp() {
-    rm -f "$USER_TMP" "$IDENTITY_TMP" "$MEMORY_TMP" "$STATE_FILE.tmp" "$STATE_FILE.tmp2" 2>/dev/null || true
+    rm -f "$USER_TMP" "$IDENTITY_TMP" "$MEMORY_TMP" "$LEARNING_TMP" "$UNDERSTANDING_TMP" "$WIKILINKS_TMP" "$STATE_FILE.tmp" "$STATE_FILE.tmp2" 2>/dev/null || true
 }
 
 # Trap for cleanup on error or exit
@@ -57,8 +57,9 @@ trap 'rm -rf "$LOCK_DIR"; cleanup_temp' EXIT INT TERM HUP
 check_template() {
     local file="$1"
     local name="$2"
-    if [ ! -s ""$file"" ] 2>/dev/null; then
+    if [ ! -s "$file" ] 2>/dev/null; then
         echo "WARNING: $name template is empty. Creating placeholder..."
+        mkdir -p "$(dirname "$file")"
         echo "# $name\n\n- [Add your $name information]" > "$file"
     fi
 }
@@ -66,6 +67,8 @@ check_template() {
 check_template "$TEMPLATES_DIR/user.md" "User"
 check_template "$TEMPLATES_DIR/identity.md" "Identity"
 check_template "$TEMPLATES_DIR/memory.md" "Memory"
+check_template "$TEMPLATES_DIR/templates/learning-models/learning-model.md" "Learning"
+check_template "$TEMPLATES_DIR/templates/learning-models/understanding-model.md" "Understanding"
 
 # === FIX 1.3: Safe JSON compilation using file inputs ===
 # Copy templates to temp files (safer than shell variables)
@@ -76,11 +79,17 @@ cp "$TEMPLATES_DIR/memory.md" "$MEMORY_TMP" 2>/dev/null || echo "" > "$MEMORY_TM
 # Timestamp
 TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
 
-# Also read learning models if they exist
+# Also read learning models and wikilinks graph if they exist
 LEARNING_TMP="$STATE_FILE.learning.tmp"
 UNDERSTANDING_TMP="$STATE_FILE.understanding.tmp"
-cp "$TEMPLATES_DIR/learning-models/learning-model.md" "$LEARNING_TMP" 2>/dev/null || echo "" > "$LEARNING_TMP"
-cp "$TEMPLATES_DIR/learning-models/understanding-model.md" "$UNDERSTANDING_TMP" 2>/dev/null || echo "" > "$UNDERSTANDING_TMP"
+WIKILINKS_TMP="$STATE_FILE.wikilinks.tmp"
+cp "$TEMPLATES_DIR/templates/learning-models/learning-model.md" "$LEARNING_TMP" 2>/dev/null || echo "" > "$LEARNING_TMP"
+cp "$TEMPLATES_DIR/templates/learning-models/understanding-model.md" "$UNDERSTANDING_TMP" 2>/dev/null || echo "" > "$UNDERSTANDING_TMP"
+if [ -f "$SUPEROC_DIR/wikilinks_graph.json" ]; then
+    cp "$SUPEROC_DIR/wikilinks_graph.json" "$WIKILINKS_TMP" 2>/dev/null || echo "{}" > "$WIKILINKS_TMP"
+else
+    echo "{}" > "$WIKILINKS_TMP"
+fi
 
 if command -v jq >/dev/null 2>&1; then
     # Use --rawfile to safely read file contents as raw text into jq strings
@@ -90,6 +99,7 @@ if command -v jq >/dev/null 2>&1; then
         --rawfile memory "$MEMORY_TMP" \
         --rawfile learning "$LEARNING_TMP" \
         --rawfile understanding "$UNDERSTANDING_TMP" \
+        --rawfile wikilinks "$WIKILINKS_TMP" \
         --arg timestamp "$TIMESTAMP" \
         '{
             user: { content: ($user // "") },
@@ -97,6 +107,7 @@ if command -v jq >/dev/null 2>&1; then
             memory: { content: ($memory // "") },
             learning_model: { content: ($learning // "") },
             understanding_model: { content: ($understanding // "") },
+            wikilinks_graph: (try fromjson($wikilinks) catch {}),
             _meta: { last_compiled: $timestamp }
         }' > "$STATE_FILE.tmp"
     
