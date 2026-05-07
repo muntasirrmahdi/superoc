@@ -132,10 +132,13 @@ Because this is an OS-level wrapper that intercepts execution at the terminal la
 
 ### Out-of-the-box Adapters
 
-| Agent | Adapter | Status |
-|-------|---------|--------|
-| OpenCode | opencode.sh | Tested |
-| Claude Code | claudecode.sh | Experimental |
+| Agent       | Adapter         | Status       |
+|-------------|-----------------|--------------|
+| OpenCode    | opencode.sh     | Tested       |
+| Claude Code | claudecode.sh   | Experimental |
+| Claude      | claude.sh       | Experimental |
+| Cursor      | cursor.sh       | Experimental |
+| Generic     | generic.sh      | Tested       |
 
 ---
 
