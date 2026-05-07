@@ -49,15 +49,24 @@ if ! command -v python3 >/dev/null 2>&1; then
     log "WARNING - python3 not found. Skipping LLM extraction."
     log "Install python3 to enable post-session learning."
 else
-    # This would run actual LLM extraction in production
-    log "Python3 available - extraction placeholder."
+    log "Python3 available - running LLM extraction..."
     
-    # Simulated extraction (placeholder)
-    # In production, this would:
-    # 1. Read latest chat transcript
-    # 2. Use LLM to extract new facts/preferences
-    # 3. Update templates with learnings
-    log "LLM extraction simulated."
+    SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    LLM_EXTRACT="$SCRIPT_DIR/llm_extract.py"
+    
+    if [ ! -f "$LLM_EXTRACT" ]; then
+        log "WARNING: llm_extract.py not found at $LLM_EXTRACT"
+    else
+        TRANSCRIPT_PATH="$LOG_DIR/latest_session.log"
+        if [ ! -f "$TRANSCRIPT_PATH" ]; then
+            log "WARNING: No session transcript found at $TRANSCRIPT_PATH"
+        else
+            export PYTHONPATH="$SCRIPT_DIR:$PYTHONPATH"
+            python3 "$LLM_EXTRACT" --transcript "$TRANSCRIPT_PATH" --superoc-dir "$SUPEROC_DIR" 2>&1 | while read -r line; do
+                log "LLM: $line"
+            done
+        fi
+    fi
 fi
 
 # === FIX 4.4: Recompile state with any new updates ===
