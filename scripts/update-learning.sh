@@ -1,26 +1,27 @@
 #!/usr/bin/env bash
-# scripts/update-learning.sh - Updates learning models at session end
-# This extracts what was learned during the session
+# update-learning.sh - Extracts learnings from session and updates learning model
 
 set -euo pipefail
 
 SUPEROC_DIR="${SUPEROC_DIR:-$HOME/.superoc}"
-MEMORY_DIR="$SUPEROC_DIR/memory"
-LEARNING_MODELS_DIR="$MEMORY_DIR/learning-models"
-LEARNING_MODEL="$LEARNING_MODELS_DIR/learning-model.md"
-UNDERSTANDING_MODEL="$LEARNING_MODELS_DIR/understanding-model.md"
+LOG_DIR="$SUPEROC_DIR/logs"
+LEARNING_MODEL="$SUPEROC_DIR/templates/learning-models/learning-model.md"
+UNDERSTANDING_MODEL="$SUPEROC_DIR/templates/learning-models/understanding-model.md"
+TODAY=$(date +%Y-%m-%d)
 
-mkdir -p "$LEARNING_MODELS_DIR"
+mkdir -p "$(dirname "$LEARNING_MODEL")"
 
-# Placeholder for session learning extraction
-# Users can replace this with their own logic
+SESSION_LOG="$LOG_DIR/$TODAY.md"
+[ -f "$SESSION_LOG" ] || exit 0
 
-echo "Session learning placeholder - add your own extraction logic here"
+grep -E "DECISION|FIXED|CREATED|IMPLEMENTED|INSIGHT|PATTERN" "$SESSION_LOG" 2>/dev/null | while read -r line; do
+    [ -n "$line" ] && echo "- $line" >> "$LEARNING_MODEL"
+done
 
-# To implement:
-# 1. Parse conversation transcript
-# 2. Extract new facts learned
-# 3. Update learning-model.md
-# 4. Update understanding-model.md if context changed
+{
+    echo ""
+    echo "## $TODAY"
+    echo "Updated: $(date)"
+} >> "$LEARNING_MODEL"
 
 exit 0
