@@ -60,25 +60,39 @@ def extract_with_anthropic(api_key: str, transcript: str) -> dict:
 
 
 def update_memory_files(superoc_dir: str, extraction: dict):
-    learning_model_path = Path(superoc_dir) / "learning-model.md"
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     
-    entry = f"\n\n## Session Learning ({timestamp})\n"
-    if extraction.get("facts"):
-        entry += "\n### Facts\n"
-        for fact in extraction["facts"]:
-            entry += f"- {fact}\n"
-    if extraction.get("decisions"):
-        entry += "\n### Decisions\n"
-        for decision in extraction["decisions"]:
-            entry += f"- {decision}\n"
+    learning_model_path = Path(superoc_dir) / "learning-models" / "learning-model.md"
+    understanding_model_path = Path(superoc_dir) / "learning-models" / "understanding-model.md"
+    memory_path = Path(superoc_dir) / "memory" / "memory.md"
+    
+    learning_model_path.parent.mkdir(parents=True, exist_ok=True)
+    understanding_model_path.parent.mkdir(parents=True, exist_ok=True)
+    memory_path.parent.mkdir(parents=True, exist_ok=True)
+    
     if extraction.get("learnings"):
+        entry = f"\n\n## Session Learning ({timestamp})\n"
         entry += "\n### Learnings\n"
         for learning in extraction["learnings"]:
             entry += f"- {learning}\n"
+        with open(learning_model_path, "a", encoding="utf-8") as f:
+            f.write(entry)
     
-    with open(learning_model_path, "a", encoding="utf-8") as f:
-        f.write(entry)
+    if extraction.get("decisions"):
+        entry = f"\n\n## Session Decisions ({timestamp})\n"
+        entry += "\n### Decisions\n"
+        for decision in extraction["decisions"]:
+            entry += f"- {decision}\n"
+        with open(understanding_model_path, "a", encoding="utf-8") as f:
+            f.write(entry)
+    
+    if extraction.get("facts"):
+        entry = f"\n\n## Learned Facts ({timestamp})\n"
+        entry += "\n### Facts\n"
+        for fact in extraction["facts"]:
+            entry += f"- {fact}\n"
+        with open(memory_path, "a", encoding="utf-8") as f:
+            f.write(entry)
 
 
 def main():
