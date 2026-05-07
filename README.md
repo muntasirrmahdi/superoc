@@ -6,6 +6,8 @@
 
 A philosophical prototype exploring how to shift LLM agent memory from the prompt level to the OS level. 
 
+**Affiliation Notice**: SuperOC is an independent project. It is **not** built by the OpenCode team and is **not** affiliated with Anomaly or the official OpenCode project in any way.
+
 **Disclaimer**: This is a personal experiment / proof-of-concept. It is not currently meant for mission-critical production environments.
 
 It works by intercepting the agent's CLI execution, compiling your long-term memory into a locked `state.json`, and dynamically injecting a strict directive into the agent's prompt to force it to read the state before responding.
