@@ -17,6 +17,8 @@ SUPEROC_USER_TIMEZONE=""
 SUPEROC_IDENTITY_CORE=""
 SUPEROC_IDENTITY_RULES=""
 SUPEROC_MEMORY_LONGTERM=""
+SUPEROC_LEARNING_MODEL=""
+SUPEROC_UNDERSTANDING_MODEL=""
 
 # Load from state.json if it exists and is valid
 if [ -f "$STATE_FILE" ] && jq -e '.' "$STATE_FILE" >/dev/null 2>&1; then
