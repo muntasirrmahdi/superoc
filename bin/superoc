@@ -188,6 +188,10 @@ if [[ -x "$SUPEROC_DIR/lib/background_supervisor.sh" ]]; then
     echo "[Supervisor] Background supervisor started (PID: $SUPERVISOR_PID)"
 fi
 
+# === FIX 7.1: Set bypass guard environment variable ===
+export SUPEROC_ACTIVE=1
+echo "[Guard] Bypass guard active (SUPEROC_ACTIVE=1)"
+
 # 4. Pass control to the underlying agent
 # Use exec to replace the shell process
 if command -v "$AGENT_CMD" >/dev/null 2>&1; then
