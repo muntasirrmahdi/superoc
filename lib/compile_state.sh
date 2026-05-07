@@ -122,7 +122,7 @@ if command -v jq >/dev/null 2>&1; then
             memory: { content: ($memory // "") },
             learning_model: { content: ($learning // "") },
             understanding_model: { content: ($understanding // "") },
-            wikilinks_graph: (try fromjson($wikilinks) catch {}),
+            wikilinks_graph: {},
             daily: { logs: {} },
             days_loaded: ($days | tonumber),
             _meta: { last_compiled: $timestamp }
