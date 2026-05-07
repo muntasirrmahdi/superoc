@@ -9,7 +9,7 @@ set -euo pipefail
 SUPEROC_DIR="${SUPEROC_DIR:-$HOME/.superoc}"
 BACKUP_DIR="${SUPEROC_DIR}/backups"
 TEMPLATE_DIR="${SUPEROC_DIR:-$HOME/.superoc}/templates"
-MEMORY_FILES=("user.md" "identity.md" "memory.md")
+MEMORY_FILES=("user.md" "identity.md" "memory.md" "learning-models/learning-model.md" "learning-models/understanding-model.md")
 TODAY=$(date +%Y-%m-%d)
 WEEK_START=$(date -d "7 days ago" +%Y-%m-%d)
 
@@ -32,6 +32,7 @@ case "$ACTION" in
         for file in "${MEMORY_FILES[@]}"; do
             source_file="$TEMPLATE_DIR/$file"
             if [ -f "$source_file" ]; then
+                mkdir -p "$(dirname "$BACKUP_SUBDIR/$file")"
                 cp "$source_file" "$BACKUP_SUBDIR/$file"
                 echo "  Backed up: $file"
             else
@@ -45,6 +46,14 @@ case "$ACTION" in
             cp "$AGENTS_TEMPLATE" "$BACKUP_SUBDIR/AGENTS.md"
             echo "  Backed up: AGENTS.md"
         fi
+        
+        for file in "state.json" "wikilinks_graph.json"; do
+            source_file="$SUPEROC_DIR/$file"
+            if [ -f "$source_file" ]; then
+                cp "$source_file" "$BACKUP_SUBDIR/$file"
+                echo "  Backed up: $file"
+            fi
+        done
         
         # Count backups
         BACKUP_COUNT=$(ls -1 "$BACKUP_DIR" | wc -l)
