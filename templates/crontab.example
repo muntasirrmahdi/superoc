@@ -1,0 +1,11 @@
+# SuperOC Cron Setup
+# Add these lines to your crontab (crontab -e)
+
+# Run backup every Sunday at 2 AM
+0 2 * * 0 ~/.superoc/lib/backup.sh
+
+# Run session extraction daily at 11 PM
+0 23 * * * ~/.superoc/lib/extract_session.sh >> ~/.superoc/logs/extract.log 2>&1
+
+# Run health check every hour
+0 * * * * ~/.superoc/lib/monitor_health.sh

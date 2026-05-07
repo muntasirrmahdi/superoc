@@ -5,14 +5,14 @@ set -e
 SUPEROC_DIR="$HOME/.superoc"
 REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-echo "⚡ Starting SuperOC Installation..."
+echo "[*] Starting SuperOC Installation..."
 
 OS_NAME="$(uname -s)"
 echo "=> Detected OS: $OS_NAME"
 
 BASH_VERSION_MAJOR=${BASH_VERSINFO[0]:-0}
 if [[ "$BASH_VERSION_MAJOR" -lt 4 ]]; then
-    echo "❌ ERROR: Bash 4.0 or newer is required."
+    echo "[!] ERROR: Bash 4.0 or newer is required."
     if [[ "$OS_NAME" == "Darwin" ]]; then
         echo "   macOS ships with Bash 3.2. Please install a newer version:"
         echo "   brew install bash"
@@ -23,7 +23,7 @@ echo "=> Bash version: $BASH_VERSION OK"
 
 if ! command -v jq >/dev/null 2>&1; then
     if ! command -v python3 >/dev/null 2>&1; then
-        echo "❌ ERROR: Neither 'jq' nor 'python3' was found. One of them is required for JSON compilation."
+        echo "[!] ERROR: Neither 'jq' nor 'python3' was found. One of them is required for JSON compilation."
         echo "   Please install jq (e.g., 'apt install jq' or 'brew install jq') or Python 3."
         exit 1
     else
@@ -38,7 +38,7 @@ if command -v flock >/dev/null 2>&1; then
 elif command -v lockf >/dev/null 2>&1; then
     LOCK_CMD="lockf"
 else
-    echo "⚠️ Warning: 'flock' or 'lockf' not found. Will fallback to POSIX atomic directory locking."
+    echo "[!] WARNING: 'flock' or 'lockf' not found. Will fallback to POSIX atomic directory locking."
     LOCK_CMD="mkdir"
 fi
 echo "=> Lock mechanism: $LOCK_CMD"
@@ -53,7 +53,7 @@ mkdir -p "$SUPEROC_DIR/monitoring"
 if [ -d "$REPO_DIR/bin" ] && [ "$(ls -A "$REPO_DIR/bin")" ]; then
     cp -r "$REPO_DIR/bin/"* "$SUPEROC_DIR/bin/"
 else
-    echo "❌ ERROR: No files found in $REPO_DIR/bin to copy."
+    echo "[!] ERROR: No files found in $REPO_DIR/bin to copy."
     exit 1
 fi
 
@@ -69,7 +69,7 @@ if [ -d "$REPO_DIR/scripts" ] && [ "$(ls -A "$REPO_DIR/scripts")" ]; then
     cp -r "$REPO_DIR/scripts/"* "$SUPEROC_DIR/scripts/"
 fi
 
-cp "$REPO_DIR/uninstall.sh" "$SUPEROC_DIR/" 2>/dev/null || echo "⚠️ Warning: uninstall.sh not found."
+cp "$REPO_DIR/uninstall.sh" "$SUPEROC_DIR/" 2>/dev/null || echo "[!] WARNING: uninstall.sh not found."
 if [ -d "$REPO_DIR/tests" ]; then
     cp -r "$REPO_DIR/tests" "$SUPEROC_DIR/tests"
 fi
@@ -100,19 +100,19 @@ if [[ -n "$RC_FILE" ]]; then
         echo "=> PATH already patched in $RC_FILE"
     fi
 else
-    echo "⚠️ Warning: Could not automatically determine your shell rc file."
+    echo "[!] WARNING: Could not automatically determine your shell rc file."
     echo "   Please manually add the following line to your profile:"
     echo "   export PATH=\"$SUPEROC_DIR/bin:\$PATH\""
 fi
 
 if [[ -x "$SUPEROC_DIR/lib/load_memory.sh" ]]; then
     echo "=> Setting up memory environment..."
-    "$SUPEROC_DIR/lib/load_memory.sh" || echo "⚠️ Warning: Initial memory setup failed."
+    "$SUPEROC_DIR/lib/load_memory.sh" || echo "[!] WARNING: Initial memory setup failed."
     echo "=> Memory environment ready."
 fi
 
 echo ""
-echo "✅ SuperOC Installed Successfully!"
+echo "[OK] SuperOC Installed Successfully!"
 echo "   Please restart your terminal or run: source ${RC_FILE:-~/.bashrc}"
 echo "   To start an agent with memory enforced, type: opencode"
 echo ""

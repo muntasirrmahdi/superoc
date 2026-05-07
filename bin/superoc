@@ -17,25 +17,25 @@ if [ -f "$SHELL_ENV" ]; then
     source "$SHELL_ENV"
 fi
 
-if [ "$SUPEROC_MEMORY_READY" != "true" ]; then
+if [ "${SUPEROC_MEMORY_READY:-false}" != "true" ]; then
     if [ -x "$SUPEROC_DIR/lib/load_memory.sh" ]; then
         source "$SUPEROC_DIR/lib/load_memory.sh" 2>/dev/null || true
     fi
 fi
 
 # === Display memory status ===
-if [ "$SUPEROC_MEMORY_READY" = "true" ]; then
-    echo "⚡ SuperOC Memory: LOADED ✓"
+if [ "${SUPEROC_MEMORY_READY:-false}" = "true" ]; then
+    echo "[ SuperOC Memory: LOADED ✓"
     if [ -n "$SUPEROC_USER_NAME" ]; then
-        echo "👤 User: $SUPEROC_USER_NAME"
+        echo "User: User: $SUPEROC_USER_NAME"
     fi
     if [ -f "$SUPEROC_DIR/lib/sync_knowledge.sh" ] && [ -x "$SUPEROC_DIR/lib/sync_knowledge.sh" ]; then
         "$SUPEROC_DIR/lib/sync_knowledge.sh" > /dev/null 2>&1 &
-        echo "🧠 SuperOC Intelligence: SYNCHRONIZING (Background) ✓"
+        echo "[AI] SuperOC Intelligence: SYNCHRONIZING (Background) ✓"
     fi
 fi
 
-echo "🔍 Starting rule compliance verification..."
+echo "[+] Starting rule compliance verification..."
 
 # === Verification ===
 STATE_JSON_VALID="false"
@@ -46,12 +46,12 @@ VERIFICATION_STATUS="unknown"
 if [ -f "$STATE_FILE" ]; then
     if jq empty "$STATE_FILE" 2>/dev/null; then
         STATE_JSON_VALID="true"
-        echo "✅ state.json: exists and valid JSON"
+        echo "[OK] state.json: exists and valid JSON"
     else
-        echo "⚠️ state.json: exists but invalid JSON"
+        echo "[!] state.json: exists but invalid JSON"
     fi
 else
-    echo "❌ state.json: file not found"
+    echo "[X] state.json: file not found"
 fi
 
 OPENCODE_CONFIG_DIR="${OPENCODE_CONFIG_DIR:-$HOME/.config/opencode}"
@@ -59,15 +59,15 @@ AGENTS_FILE="$OPENCODE_CONFIG_DIR/AGENTS.md"
 
 if [ -f "$AGENTS_FILE" ]; then
     AGENTS_FILE_EXISTS="true"
-    echo "✅ AGENTS.md: file exists"
+    echo "[OK] AGENTS.md: file exists"
     if grep -q "MANDATORY FIRST ACTION" "$AGENTS_FILE"; then
         AGENTS_CONTENT_VALID="true"
-        echo "✅ AGENTS.md: contains critical memory loading rule"
+        echo "[OK] AGENTS.md: contains critical memory loading rule"
     else
-        echo "⚠️ AGENTS.md: missing critical memory loading rule"
+        echo "[!] AGENTS.md: missing critical memory loading rule"
     fi
 else
-    echo "❌ AGENTS.md: file not found"
+    echo "[X] AGENTS.md: file not found"
 fi
 
 if [ "$STATE_JSON_VALID" = "true" ] && [ "$AGENTS_FILE_EXISTS" = "true" ] && [ "$AGENTS_CONTENT_VALID" = "true" ]; then
@@ -89,11 +89,11 @@ fi
     echo "state.json valid: $STATE_JSON_VALID"
     echo "AGENTS.md exists: $AGENTS_FILE_EXISTS"
     echo "AGENTS.md content valid: $AGENTS_CONTENT_VALID"
-    echo "SUPEROC_MEMORY_READY: $SUPEROC_MEMORY_READY"
+    echo "SUPEROC_MEMORY_READY: ${SUPEROC_MEMORY_READY:-unset}"
 } > "$COMPLIANCE_LOG"
 
-echo "📊 Verification complete: $VERIFICATION_STATUS"
-echo "📝 Log saved to: $COMPLIANCE_LOG"
+echo "[STATS] Verification complete: $VERIFICATION_STATUS"
+echo "[LOG] Log saved to: $COMPLIANCE_LOG"
 
 # === FIX 1.2: Exit if adapter missing for known agents ===
 AGENT_CMD="${1:-}"

@@ -4,7 +4,7 @@ set -e
 
 SUPEROC_DIR="$HOME/.superoc"
 
-echo "⚡ Starting SuperOC Uninstallation..."
+echo "[*] Starting SuperOC Uninstallation..."
 
 if [[ ! -d "$SUPEROC_DIR" ]]; then
     echo "=> SuperOC directory not found at $SUPEROC_DIR. Nothing to do."
@@ -34,5 +34,5 @@ clean_rc "$HOME/.bashrc"
 clean_rc "$HOME/.bash_profile"
 
 echo ""
-echo "✅ SuperOC Uninstalled Successfully!"
+echo "[OK] SuperOC Uninstalled Successfully!"
 echo "   Please restart your terminal to apply PATH changes."

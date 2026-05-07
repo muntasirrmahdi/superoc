@@ -1,0 +1,20 @@
+{
+  "comment": "SuperOC Wikilinks Parser Configuration",
+  "sources": [
+    "~/projects",
+    "~/docs"
+  ],
+  "exclude": [
+    "*.pyc",
+    "node_modules",
+    ".git",
+    "dist",
+    "build",
+    "__pycache__"
+  ],
+  "file_extensions": [
+    ".md",
+    ".txt",
+    ".markdown"
+  ]
+}

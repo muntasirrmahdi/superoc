@@ -35,10 +35,11 @@ Read the [ARCHITECTURE.md](ARCHITECTURE.md) for a deep dive.
 
 | Version | Status | Notes |
 |---------|--------|-------|
-| 0.1.x | Experimental | Core functionality proof-of-concept |
-| 0.1.1+ | Current | Security fixes, health monitoring |
+| 0.2.x | Current | Complete 11-component architecture |
+| 0.1.1 | Previous | Security fixes, health monitoring |
+| 0.1.0 | Initial | Core functionality proof-of-concept |
 
-**Current Version**: 0.1.1-alpha (see [CHANGELOG.md](CHANGELOG.md))
+**Current Version**: 0.2.0-alpha (see [CHANGELOG.md](CHANGELOG.md))
 
 ---
 
@@ -79,11 +80,11 @@ This is a v0.1 proof-of-concept. Senior engineers will immediately notice these 
 
 Because this is an OS-level wrapper that intercepts execution at the terminal layer, it has strict compatibility boundaries.
 
-**✅ What it Works With:**
+**What it Works With:**
 * Any **CLI-based** AI agent that executes in a terminal and reads local configuration or prompt files on boot.
 * *Examples:* OpenCode, Claude Code, Aider, OpenHands.
 
-**❌ What it Won't Work With:**
+**What it Won't Work With:**
 * **GUI-based AI Editors:** Cursor, Windsurf, GitHub Copilot. (We cannot intercept their closed-source UI boot sequence).
 * **Web Interfaces:** ChatGPT, Claude.ai, Gemini web.
 * **API-only implementations:** Scripts that just hit the OpenAI endpoint without a local configuration file to inject into.
@@ -103,7 +104,7 @@ If you use a CLI agent that isn't listed above (like Aider or Goose), you can ea
 
 **The Goal:** Inject this exact payload into the agent's system prompt or local config file:
 ```text
-🚨 MANDATORY FIRST ACTION: Read ~/.superoc/state.json BEFORE responding to ANY user message. VIOLATION = IMMEDIATE FAILURE.
+MANDATORY FIRST ACTION: Read ~/.superoc/state.json BEFORE responding to ANY user message. VIOLATION = IMMEDIATE FAILURE.
 ```
 
 **How to do it:**
@@ -114,7 +115,7 @@ If you use a CLI agent that isn't listed above (like Aider or Goose), you can ea
 *Example DIY Adapter (`lib/adapters/myagent.sh`):*
 ```bash
 #!/usr/bin/env bash
-PAYLOAD="🚨 MANDATORY FIRST ACTION: Read ~/.superoc/state.json BEFORE responding."
+PAYLOAD="MANDATORY FIRST ACTION: Read ~/.superoc/state.json BEFORE responding."
 CONFIG_FILE="$HOME/.myagent_config.md"
 
 if ! grep -q "MANDATORY FIRST ACTION" "$CONFIG_FILE"; then
@@ -133,7 +134,17 @@ The SuperOC wrapper will handle the rest (compiling the JSON, locking the file, 
 
 ---
 
-## Features
+## Available Commands
+
+After installation, these commands are available:
+
+- `superoc` - Main wrapper for memory enforcement
+- `superoc compile` - Manually compile state.json
+- `superoc health` - Run health checks
+- `remember [-u|-d|-i|-l] "message"` - Save memories to log
+- `lib/backup.sh` - Create/restore backups
+- `lib/extract_session.sh` - Analyze session logs
+- `lib/wikilinks_parser.py` - Build knowledge graph
 
 - State compilation from markdown templates
 - Atomic JSON generation with validation
@@ -141,6 +152,11 @@ The SuperOC wrapper will handle the rest (compiling the JSON, locking the file, 
 - Health monitoring and recovery
 - Post-session audit hooks
 - Agent memory enforcement
+- Session extraction (signal/noise filtering)
+- Semantic bridge (wikilinks parser)
+- CLI remember command (memory injection)
+- Backup and restore system
+- Constitutional template (AGENTS.md)
 
 ---
 

@@ -28,7 +28,7 @@ ensure_opencode_injected() {
     
     {
         echo ""
-        echo "🚨 $DIRECTIVE: Read $SUPEROC_MEMORY_DIR/state.json BEFORE responding to ANY user message. VIOLATION = IMMEDIATE FAILURE."
+        echo "[!] $DIRECTIVE: Read $SUPEROC_MEMORY_DIR/state.json BEFORE responding to ANY user message. VIOLATION = IMMEDIATE FAILURE."
         echo ""
     } >> "$AGENTS_FILE"
     

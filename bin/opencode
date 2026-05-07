@@ -27,7 +27,7 @@ if [ -f "$SHELL_ENV" ]; then
     source "$SHELL_ENV"
 fi
 
-if [ "$SUPEROC_MEMORY_READY" != "true" ]; then
+if [ "${SUPEROC_MEMORY_READY:-false}" != "true" ]; then
     if [ -x "$SUPEROC_DIR/lib/load_memory.sh" ]; then
         source "$SUPEROC_DIR/lib/load_memory.sh" 2>/dev/null || true
     fi

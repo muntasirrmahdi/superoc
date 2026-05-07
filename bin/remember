@@ -1,0 +1,91 @@
+#!/bin/bash
+# SuperOC Remember CLI
+# Usage: remember [-u|-d|-i|-l] "message to remember"
+#   -u, --user    : User-related info
+#   -d, --decision : A decision made
+#   -i, --info    : General information
+#   -l, --longterm : Also save to long-term memory
+
+set -euo pipefail
+
+# CONFIG: Override via environment
+SUPEROC_DIR="${SUPEROC_DIR:-$HOME/.superoc}"
+LOG_DIR="${SUPEROC_DIR}/logs"
+MEMORY_FILE="${SUPEROC_DIR}/memory.md"
+TODAY=$(date +%Y-%m-%d)
+TIMESTAMP=$(date +"%H:%M")
+
+# Create directories
+mkdir -p "$LOG_DIR"
+
+LOG_FILE="$LOG_DIR/$TODAY.md"
+
+# Parse arguments
+CATEGORY="MEMORY"
+LONGTERM=0
+
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        -u|--user)
+            CATEGORY="USER"
+            shift
+            ;;
+        -d|--decision)
+            CATEGORY="DECISION"
+            shift
+            ;;
+        -i|--info)
+            CATEGORY="INFO"
+            shift
+            ;;
+        -l|--longterm)
+            LONGTERM=1
+            shift
+            ;;
+        -h|--help)
+            echo "Usage: remember [-u|-d|-i|-l] \"message to remember\""
+            echo "  -u, --user    : User-related info"
+            echo "  -d, --decision : A decision made"
+            echo "  -i, --info    : General information"
+            echo "  -l, --longterm : Also save to long-term memory"
+            exit 0
+            ;;
+        -*)
+            echo "Unknown option: $1"
+            exit 1
+            ;;
+        *)
+            break
+            ;;
+    esac
+done
+
+MESSAGE="$*"
+
+if [ -z "$MESSAGE" ]; then
+    echo "Usage: remember [-u|-d|-i|-l] \"message to remember\""
+    exit 1
+fi
+
+# Append to daily log
+{
+    echo "## [$TIMESTAMP] $CATEGORY"
+    echo "$MESSAGE"
+    echo ""
+} >> "$LOG_FILE"
+
+echo "Remembered: $MESSAGE"
+echo "Saved to: $LOG_FILE"
+
+# Optionally save to long-term memory
+if [ "$LONGTERM" -eq 1 ]; then
+    mkdir -p "$(dirname "$MEMORY_FILE")"
+    {
+        echo ""
+        echo "## [$TODAY $TIMESTAMP] $CATEGORY"
+        echo "$MESSAGE"
+    } >> "$MEMORY_FILE"
+    echo "Also saved to: $MEMORY_FILE"
+fi
+
+exit 0

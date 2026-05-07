@@ -1,5 +1,25 @@
 # SuperOC Changelog
 
+## [0.2.0-alpha] - 2026-05-07
+
+### Added
+- Extraction Layer (lib/extract_session.sh) - Signal/noise filtering for session log analysis
+- Semantic Bridge (lib/wikilinks_parser.py) - [[Entity]] link parser and knowledge graph builder
+- User-Facing CLI (bin/remember) - Memory injection command with categories (-u, -d, -i, -l)
+- Backup System (lib/backup.sh) - Automated weekly snapshots with restore capability
+- Constitutional Template (templates/AGENTS.md) - Enforcement rules template
+
+### Changed
+- Directory structure updated to match full 11-component architecture
+- Templates moved to proper locations (bin/, lib/, templates/)
+- Wikilinks parser uses JSON configuration for flexibility
+
+### Known Limitations
+- Wikilinks parser requires configuration file at ~/.superoc/wikilinks.json
+- Backup system requires manual cron setup for automation
+
+---
+
 ## [0.1.1-alpha] - 2026-05-06
 
 ### Added

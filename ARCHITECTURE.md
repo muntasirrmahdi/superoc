@@ -20,7 +20,7 @@ This script performs rigorous pre-flight checks:
 1. **State Compilation**: A background script aggregates data from various markdown files (Identity, Long-term Memory, User Context) into a single, compact `state.json`.
 2. **File Locking**: Uses `flock` to ensure no two sessions can corrupt the memory state simultaneously.
 3. **Mandatory Injection**: The wrapper dynamically injects a strict directive into the agent's core instructions file (e.g., `AGENTS.md`).
-   * *The Directive*: `"🚨 MANDATORY FIRST ACTION: Read ~/.superoc/state.json BEFORE responding to ANY user message. VIOLATION = IMMEDIATE FAILURE."*
+   * *The Directive*: `"MAN MANDATORY FIRST ACTION: Read ~/.superoc/state.json BEFORE responding to ANY user message. VIOLATION = IMMEDIATE FAILURE."*
 
 ### 2. The Execution Phase (The Bound Agent)
 When the agent boots, its underlying framework feeds it the newly modified instructions file. The LLM is explicitly warned with "immediate failure" if it does not read `state.json`. Because modern LLMs are highly instruction-aligned, this prompt-level threat strongly biases its first autonomous action to be a `read_file` tool call.
