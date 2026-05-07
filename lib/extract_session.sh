@@ -15,6 +15,41 @@ if [ -f "$EXTRACT_CONFIG_DIR/extract.conf" ]; then
     source "$EXTRACT_CONFIG_DIR/extract.conf"
 fi
 
+USE_LLM="${USE_LLM:-auto}"
+LLM_EXTRACT_PATH="${LLM_EXTRACT_PATH:-$(dirname "$0")/llm_extract.py}"
+
+semantic_extract() {
+    local log_file="$1"
+    local output_file="$2"
+    
+    if [ "$USE_LLM" = "no" ]; then
+        return 1
+    fi
+    
+    if [ ! -f "$LLM_EXTRACT_PATH" ]; then
+        [ "$USE_LLM" = "yes" ] && echo "ERROR: LLM extract not found at $LLM_EXTRACT_PATH" >&2
+        return 1
+    fi
+    
+    if ! python3 -c "import sys; sys.path.insert(0, '$(dirname "$LLM_EXTRACT_PATH")'); from llm_extract import extract_with_openai, extract_with_anthropic" 2>/dev/null; then
+        [ "$USE_LLM" = "yes" ] && echo "ERROR: LLM dependencies not available" >&2
+        return 1
+    fi
+    
+    echo "Using LLM semantic analysis..." >&2
+    local temp_output=$(mktemp)
+    if python3 "$LLM_EXTRACT_PATH" --transcript "$log_file" --superoc-dir "$EXTRACT_CONFIG_DIR" 2>&1 | tee "$temp_output"; then
+        if [ -n "$output_file" ]; then
+            grep "Extracted:" "$temp_output" > "$output_file" 2>/dev/null || true
+        fi
+        rm -f "$temp_output"
+        return 0
+    else
+        rm -f "$temp_output"
+        return 1
+    fi
+}
+
 LOG_FILE="${1:-$HOME/.superoc/logs/$(date +%Y-%m-%d).md}"
 OUTPUT_FILE="${2:-}"
 
@@ -25,6 +60,17 @@ IFS=',' read -ra NOISE <<< "$NOISE_PATTERNS"
 # Check if log file exists
 if [ ! -f "$LOG_FILE" ]; then
     echo "{\"summary\": \"No session log found\", \"key_learnings\": \"\", \"new_observations\": \"Log file missing\"}" >&2
+    exit 0
+fi
+
+LLM_SUCCESS=0
+if [ "$USE_LLM" != "no" ]; then
+    if semantic_extract "$LOG_FILE" "$OUTPUT_FILE"; then
+        LLM_SUCCESS=1
+    fi
+fi
+
+if [ "$LLM_SUCCESS" -eq 1 ]; then
     exit 0
 fi
 
