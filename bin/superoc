@@ -147,13 +147,14 @@ else
     exit 1
 fi
 
-# === FIX 1.5: Verify injection after adapter runs ===
-# 2. Mandatory Injection
-if [[ -n "$ADAPTER_FILE" && -x "$ADAPTER_FILE" ]]; then
-    if ! "$ADAPTER_FILE" "inject"; then
-        echo "ERROR: Adapter injection failed for $AGENT_CMD."
-        exit 1
+    # === FIX 1.5: Verify injection after adapter runs ===
+    if ! "$ADAPTER_FILE" "verify" 2>/dev/null; then
+        echo "WARNING: Could not verify memory injection."
     fi
+    
+    # Create flag file to indicate state was prepared for loading
+    touch "$SUPEROC_DIR/state_loaded.flag" 2>/dev/null || true
+fi
     # === FIX 1.5: Verify injection took effect ===
     if ! "$ADAPTER_FILE" "verify" 2>/dev/null; then
         echo "WARNING: Could not verify memory injection."

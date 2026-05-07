@@ -78,6 +78,11 @@ if [[ -x "$SUPEROC_DIR/lib/compile_state.sh" ]]; then
     fi
 fi
 
+if [[ -x "$SUPEROC_DIR/lib/verify_state_loaded.sh" ]]; then
+    log "Running state loading verification..."
+    "$SUPEROC_DIR/lib/verify_state_loaded.sh" >> "$LOG_FILE" 2>&1 || true
+fi
+
 log "Audit complete."
 
 # === FIX 4.4: Proper exit code propagation ===
