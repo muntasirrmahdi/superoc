@@ -11,7 +11,8 @@
     "wikilinks_graph": { "type": "object" },
     "daily": { "type": "object", "properties": { "logs": { "type": "object" } } },
     "days_loaded": { "type": "integer" },
+    "ready": { "type": "boolean" },
     "_meta": { "type": "object", "properties": { "last_compiled": { "type": "string" } } }
   },
-  "required": ["user", "identity", "memory", "learning_model", "understanding_model", "_meta"]
+  "required": ["user", "identity", "memory", "learning_model", "understanding_model", "ready", "_meta"]
 }

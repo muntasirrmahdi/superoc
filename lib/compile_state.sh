@@ -125,6 +125,7 @@ if command -v jq >/dev/null 2>&1; then
             wikilinks_graph: ($wikilinks[0] // {}),
             daily: { logs: {} },
             days_loaded: ($days | tonumber),
+            ready: true,
             _meta: { last_compiled: $timestamp }
         }' > "$STATE_FILE.tmp"
     
