@@ -31,8 +31,14 @@ if [ -f "$STATE_FILE" ] && jq -e '.' "$STATE_FILE" >/dev/null 2>&1; then
     # Extract identidad
     SUPEROC_IDENTITY_CORE=$(jq -r '.identity.content // ""' "$STATE_FILE" 2>/dev/null | head -20)
     
-    # Extract long-term memory
-    SUPEROC_MEMORY_LONGTERM=$(jq -r '.memory.content // ""' "$STATE_FILE" 2>/dev/null | head -20)
+# Extract long-term memory
+SUPEROC_MEMORY_LONGTERM=$(jq -r '.memory.content // ""' "$STATE_FILE" 2>/dev/null | head -20)
+
+# Extract learning model
+SUPEROC_LEARNING_MODEL=$(jq -r '.learning_model.content // ""' "$STATE_FILE" 2>/dev/null | head -20)
+
+# Extract understanding model
+SUPEROC_UNDERSTANDING_MODEL=$(jq -r '.understanding_model.content // ""' "$STATE_FILE" 2>/dev/null | head -20)
 fi
 
 # Write shell environment for sourcing
@@ -45,6 +51,8 @@ fi
     echo "export SUPEROC_USER_EMAIL=\"$SUPEROC_USER_EMAIL\""
     echo "export SUPEROC_USER_LOCATION=\"$SUPEROC_USER_LOCATION\""
     echo "export SUPEROC_USER_TIMEZONE=\"$SUPEROC_USER_TIMEZONE\""
+    echo "export SUPEROC_LEARNING_MODEL=\"$SUPEROC_LEARNING_MODEL\""
+    echo "export SUPEROC_UNDERSTANDING_MODEL=\"$SUPEROC_UNDERSTANDING_MODEL\""
 } > "$SHELL_ENV"
 
 chmod 600 "$SHELL_ENV" 2>/dev/null || true

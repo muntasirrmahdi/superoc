@@ -205,6 +205,8 @@ cat ~/.superoc/state.json          # View compiled state
 cat ~/.superoc/shell.env       # View environment variables
 ls ~/.superoc/backups/        # List backups
 ls ~/.superoc/monitoring/    # View logs
+cat ~/.superoc/templates/learning-models/learning-model.md    # View learnings
+cat ~/.superoc/templates/learning-models/understanding-model.md  # View understanding
 ```
 
 ---
@@ -249,6 +251,10 @@ cat ~/.superoc/templates/identity.md
 ~/.superoc/lib/monitor_health.sh
 cat ~/.superoc/logs/health.log
 ```
+
+---
+
+## Requirements
 
 - Bash 4.0+
 - jq or python3 (for JSON)

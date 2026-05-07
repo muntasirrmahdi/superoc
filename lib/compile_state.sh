@@ -76,18 +76,27 @@ cp "$TEMPLATES_DIR/memory.md" "$MEMORY_TMP" 2>/dev/null || echo "" > "$MEMORY_TM
 # Timestamp
 TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
 
+# Also read learning models if they exist
+LEARNING_TMP="$STATE_FILE.learning.tmp"
+UNDERSTANDING_TMP="$STATE_FILE.understanding.tmp"
+cp "$TEMPLATES_DIR/learning-models/learning-model.md" "$LEARNING_TMP" 2>/dev/null || echo "" > "$LEARNING_TMP"
+cp "$TEMPLATES_DIR/learning-models/understanding-model.md" "$UNDERSTANDING_TMP" 2>/dev/null || echo "" > "$UNDERSTANDING_TMP"
+
 if command -v jq >/dev/null 2>&1; then
-    # === FIX 1.4: Validate JSON after compilation ===
     # Use --rawfile to safely read file contents as raw text into jq strings
     jq -n \
         --rawfile user "$USER_TMP" \
         --rawfile identity "$IDENTITY_TMP" \
         --rawfile memory "$MEMORY_TMP" \
+        --rawfile learning "$LEARNING_TMP" \
+        --rawfile understanding "$UNDERSTANDING_TMP" \
         --arg timestamp "$TIMESTAMP" \
         '{
             user: { content: ($user // "") },
             identity: { content: ($identity // "") },
             memory: { content: ($memory // "") },
+            learning_model: { content: ($learning // "") },
+            understanding_model: { content: ($understanding // "") },
             _meta: { last_compiled: $timestamp }
         }' > "$STATE_FILE.tmp"
     
