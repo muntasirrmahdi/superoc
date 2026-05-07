@@ -108,7 +108,10 @@ while IFS= read -r entry_line; do
     done
     [ "$is_noise" -eq 1 ] && continue
     
-    # Check significance
+    next_line=$(grep -n "^## \[" "$TEMP_LOG" | awk -F: "\$1 > $line_num {print \$1; exit}")
+    [ -z "$next_line" ] && next_line=$(($(wc -l < "$TEMP_LOG") + 1))
+    content=$(sed -n "${line_num},$((next_line-1))p" "$TEMP_LOG")
+
     is_significant=0
     for keyword in "${KEYWORDS[@]}"; do
         if echo "$title" | grep -qi "$keyword"; then
@@ -117,12 +120,7 @@ while IFS= read -r entry_line; do
         fi
     done
     
-    # Check content for keywords
     if [ "$is_significant" -eq 0 ]; then
-        next_line=$(grep -n "^## \[" "$TEMP_LOG" | awk -F: "\$1 > $line_num {print \$1; exit}")
-        [ -z "$next_line" ] && next_line=$(($(wc -l < "$TEMP_LOG") + 1))
-        content=$(sed -n "${line_num},$((next_line-1))p" "$TEMP_LOG")
-        
         for keyword in "${KEYWORDS[@]}"; do
             if echo "$content" | grep -qi "$keyword"; then
                 is_significant=1
