@@ -3,6 +3,7 @@
 [![GitHub stars](https://img.shields.io/github/stars/muntasirrmahdi/superoc?style=social)](https://github.com/muntasirrmahdi/superoc/stargazers)
 [![GitHub license](https://img.shields.io/github/license/muntasirrmahdi/superoc)](https://github.com/muntasirrmahdi/superoc/blob/main/LICENSE)
 [![Bash](https://img.shields.io/badge/Language-Bash-4EAA25.svg)](https://www.gnu.org/software/bash/)
+[![Python](https://img.shields.io/badge/Language-Python-3776AB.svg)](https://www.python.org/)
 
 A philosophical prototype exploring how to shift LLM agent memory from the prompt level to the OS level. 
 
@@ -109,7 +110,7 @@ This is a v0.1 proof-of-concept. Senior engineers will immediately notice these 
 1. **The Illusion of Guarantee:** There is no physical OS mechanism to force a specific LLM token generation. The "mandatory injection" relies heavily on LLM alignment (penalty avoidance).
 2. **The Brittle `trap EXIT`:** Post-session learning relies on `trap EXIT`, which misses `SIGKILL` and Out-Of-Memory (OOM) crashes.
 3. **The Bypass Vulnerability:** If a user directly runs `opencode` or `claude` (bypassing the `superoc` wrapper script), the entire memory stack is ignored.
-4. **The Stub Learning Loop:** Currently, it acts mostly as a memory *injector*. True autonomous recursive memory distillation is slated for v2.0.
+4. **The Stub Learning Loop:** Basic learning models (learning_model.md, understanding_model.md) are now implemented. True autonomous recursive memory distillation is slated for v2.0.
 
 *If you see how to fix these, PRs are welcome.*
 
