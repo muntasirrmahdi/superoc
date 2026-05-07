@@ -90,10 +90,11 @@ Timezone: GMT+6
 - Decision-making approach
 ```
 
-The system also maintains:
+The system maintains these components:
+
+- `state.json` - Compiled state with all 8 fields (user, identity, memory, learning_model, understanding_model, wikilinks_graph, daily.logs, days_loaded)
 - `wikilinks_graph.json` - Entity knowledge graph from [[wikilinks]]
 - `logs/` - Daily session logs (last 7 days)
-- `state.json` - Compiled state with all fields
 ### Step 3: Start Using It
 ```bash
 superoc opencode
@@ -105,12 +106,12 @@ That's it. The memory enforcement is now automatic.
 
 ## Known Limitations & V2 Roadmap
 
-This is a v0.1 proof-of-concept. Senior engineers will immediately notice these architectural realities:
+This is v0.2.0-alpha. Senior engineers will immediately notice these architectural realities:
 
 1. **The Illusion of Guarantee:** There is no physical OS mechanism to force a specific LLM token generation. The "mandatory injection" relies heavily on LLM alignment (penalty avoidance).
 2. **The Brittle `trap EXIT`:** Post-session learning relies on `trap EXIT`, which misses `SIGKILL` and Out-Of-Memory (OOM) crashes.
 3. **The Bypass Vulnerability:** If a user directly runs `opencode` or `claude` (bypassing the `superoc` wrapper script), the entire memory stack is ignored.
-4. **The Stub Learning Loop:** Basic learning models (learning_model.md, understanding_model.md) are now implemented. True autonomous recursive memory distillation is slated for v2.0.
+4. **Learning Loop:** Learning models (learning_model.md, understanding_model.md) are now implemented. True autonomous recursive memory distillation is under active development.
 
 *If you see how to fix these, PRs are welcome.*
 
