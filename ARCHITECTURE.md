@@ -17,7 +17,7 @@ This open-source blueprint intercepts the standard execution of agentic coding t
 Instead of running the agent directly, the user runs a wrapper script (`superoc`).
 This script performs rigorous pre-flight checks:
 
-1. **State Compilation**: A background script aggregates data from various markdown files (Identity, Long-term Memory, User Context) into a single, compact `state.json`.
+1. **State Compilation**: A background script aggregates data from various markdown files (Identity, Long-term Memory, User Context, Learning Models, Understanding Model, Wikilinks Graph) into a single, compact `state.json`.
 2. **File Locking**: Uses `flock` to ensure no two sessions can corrupt the memory state simultaneously.
 3. **Mandatory Injection**: The wrapper dynamically injects a strict directive into the agent's core instructions file (e.g., `AGENTS.md`).
    * *The Directive*: `"MAN MANDATORY FIRST ACTION: Read ~/.superoc/state.json BEFORE responding to ANY user message. VIOLATION = IMMEDIATE FAILURE."*
@@ -46,17 +46,36 @@ To open-source this, the repository should be structured as a drop-in installati
 superoc-memory-stack/
 ├── install.sh                  # Sets up directories, crons, and aliases
 ├── bin/
-│   └── superoc                 # The main bash wrapper (intercepts the agent CLI)
+│   ├── superoc                 # The main bash wrapper (intercepts the agent CLI)
+│   └── remember                # CLI tool to save memories
 ├── lib/
 │   ├── compile_state.sh        # Compiles markdown into state.json safely
-│   ├── post_session_audit.sh   # The EXIT trap script for parsing logs
+│   ├── load_memory.sh          # Loads state.json into agent context
+│   ├── wikilinks_parser.py    # Parses [[wikilinks]] into knowledge graph
 │   └── monitor_health.sh       # Background daemon checking file locks and PIDs
 ├── templates/
 │   ├── USER.md                 # Template: Who the user is
 │   ├── IDENTITY.md             # Template: Who the agent is
-│   └── MEMORY.md               # Template: Long-term facts
+│   ├── MEMORY.md               # Template: Long-term facts
+│   ├── AGENTS.md               # Template: Agent instructions with state enforcement
+│   └── learning-models/
+│       ├── learning-model.md    # Template: What the agent learned
+│       └── understanding-model.md # Template: Agent's understanding of user
+├── tests/
+│   └── test_compile_state.sh  # Verification script
 └── README.md                   # Installation & Architecture Guide
 ```
+
+The compiled `state.json` contains:
+- `user.content` - Who the user is
+- `identity.content` - Who the agent is
+- `memory.content` - Long-term facts
+- `learning_model.content` - What the agent learned
+- `understanding_model.content` - Agent's understanding of user
+- `wikilinks_graph` - Entity knowledge graph
+- `daily.logs` - Last 7 days of session activity
+- `days_loaded` - Count of session days
+- `_meta` - Metadata (last compiled timestamp)
 
 ## Why This Beats Standard "Memory" Features
 

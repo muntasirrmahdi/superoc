@@ -75,6 +75,24 @@ Timezone: GMT+6
 - Anything you want the agent to always remember
 ```
 
+**learning-models/learning-model.md** (what agent learned):
+```markdown
+- Patterns observed in user behavior
+- Repeated requests or preferences
+- Session-based learnings
+```
+
+**learning-models/understanding-model.md** (agent's understanding of user):
+```markdown
+- User's thinking patterns
+- Communication style preferences
+- Decision-making approach
+```
+
+The system also maintains:
+- `wikilinks_graph.json` - Entity knowledge graph from [[wikilinks]]
+- `logs/` - Daily session logs (last 7 days)
+- `state.json` - Compiled state with all fields
 ### Step 3: Start Using It
 ```bash
 superoc opencode

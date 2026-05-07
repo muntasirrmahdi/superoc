@@ -8,6 +8,12 @@
 - User-Facing CLI (bin/remember) - Memory injection command with categories (-u, -d, -i, -l)
 - Backup System (lib/backup.sh) - Automated weekly snapshots with restore capability
 - Constitutional Template (templates/AGENTS.md) - Enforcement rules template
+- Learning Model (templates/learning-models/learning-model.md) - Captures agent learnings
+- Understanding Model (templates/learning-models/understanding-model.md) - Agent's understanding of user
+- wikilinks_graph field in state.json - Entity knowledge graph
+- daily.logs in state.json - Last 7 days of session activity
+- days_loaded counter in state.json - Tracks loaded session count
+- Updated state.schema.json with all 8 required fields
 
 ### Changed
 - Directory structure updated to match full 11-component architecture
