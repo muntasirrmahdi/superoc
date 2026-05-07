@@ -45,21 +45,42 @@ Read the [ARCHITECTURE.md](ARCHITECTURE.md) for a deep dive.
 
 ## Quick Start: 3-Step Installation
 
-### 1. Run the Installer
+### Step 1: Install (30 seconds)
 ```bash
 curl -fsSL https://raw.githubusercontent.com/muntasirrmahdi/superoc/main/install.sh | bash
 ```
 
-### 2. Configure Your Identity
-Edit templates in `~/.superoc/templates/`:
-- `user.md` - Who you are
-- `identity.md` - How the agent should behave
-- `memory.md` - Long-term facts
+### Step 2: Configure Your Identity (5 minutes)
+After install, edit these files in `~/.superoc/templates/`:
 
-### 3. Start the Agent
+**user.md** (who you are):
+```markdown
+Name: Your Name
+Email: your@email.com
+Location: City, Country
+Timezone: GMT+6
+```
+
+**identity.md** (how agent should behave):
+```markdown
+- Be concise - use bullet points
+- Always answer directly without preamble
+- Never guess - verify first
+```
+
+**memory.md** (important facts):
+```markdown
+- Projects you're working on
+- Key preferences
+- Anything you want the agent to always remember
+```
+
+### Step 3: Start Using It
 ```bash
 superoc opencode
 ```
+
+That's it. The memory enforcement is now automatic.
 
 ---
 
@@ -136,31 +157,98 @@ The SuperOC wrapper will handle the rest (compiling the JSON, locking the file, 
 
 ## Available Commands
 
-After installation, these commands are available:
+### Main Wrapper
+```bash
+superoc opencode              # Start with memory enforcement
+superoc opencode --agent     # Use specific agent mode
+superoc                     # Same as superoc opencode
+```
 
-- `superoc` - Main wrapper for memory enforcement
-- `superoc compile` - Manually compile state.json
-- `superoc health` - Run health checks
-- `remember [-u|-d|-i|-l] "message"` - Save memories to log
-- `lib/backup.sh` - Create/restore backups
-- `lib/extract_session.sh` - Analyze session logs
-- `lib/wikilinks_parser.py` - Build knowledge graph
+### State Management
+```bash
+superoc compile             # Manually compile state.json
+~/.superoc/lib/compile_state.sh   # Alternative: force recompile
+```
 
-- State compilation from markdown templates
-- Atomic JSON generation with validation
-- Per-user private locking
-- Health monitoring and recovery
-- Post-session audit hooks
-- Agent memory enforcement
-- Session extraction (signal/noise filtering)
-- Semantic bridge (wikilinks parser)
-- CLI remember command (memory injection)
-- Backup and restore system
-- Constitutional template (AGENTS.md)
+### Health & Diagnostics
+```bash
+superoc health              # Run health checks
+~/.superoc/lib/monitor_health.sh  # View system health
+```
+
+### Backup & Restore
+```bash
+~/.superoc/lib/backup.sh                # Create backup
+~/.superoc/lib/backup.sh restore       # Restore latest backup
+~/.superoc/lib/backup.sh list           # List available backups
+~/.superoc/lib/backup.sh restore <name>  # Restore specific backup
+```
+
+### Session Analysis
+```bash
+~/.superoc/lib/extract_session.sh    # Analyze recent sessions
+```
+
+### Remember Command (CLI)
+```bash
+remember -u "something important"   # Save a memory (user)
+remember -d "something important"   # Save a memory (developer)  
+remember -i "something important" # Save a memory (identity)
+remember -l                          # List all saved memories
+```
 
 ---
 
-## Requirements
+### Quick Status Check
+```bash
+cat ~/.superoc/state.json          # View compiled state
+cat ~/.superoc/shell.env       # View environment variables
+ls ~/.superoc/backups/        # List backups
+ls ~/.superoc/monitoring/    # View logs
+```
+
+---
+
+## Troubleshooting
+
+### superoc: command not found
+```bash
+# Add to your PATH manually:
+echo 'export PATH="$HOME/.superoc/bin:$PATH"' >> ~/.bashrc
+source ~/.bashrc
+```
+
+### "ERROR: Neither 'jq' nor 'python3' was found"
+Install jq first:
+- macOS: `brew install jq`
+- Ubuntu/Debian: `sudo apt install jq`
+- Or use python3 fallback (auto-detected)
+
+### "WARNING: Another SuperOC process is compiling state"
+Wait 5 seconds, or remove stale lock:
+```bash
+rm -rf ~/.superoc/.lock
+```
+
+### state.json is corrupted
+```bash
+rm ~/.superoc/state.json
+superoc compile
+```
+
+### Memory not loading
+Check your templates:
+```bash
+cat ~/.superoc/templates/user.md
+cat ~/.superoc/templates/identity.md
+# Make sure they're not empty
+```
+
+### Run diagnostics
+```bash
+~/.superoc/lib/monitor_health.sh
+cat ~/.superoc/logs/health.log
+```
 
 - Bash 4.0+
 - jq or python3 (for JSON)

@@ -1,49 +1,90 @@
 # SuperOC Troubleshooting Guide
 
-## Installation Issues
+## Quick Diagnostics
 
-### 1. "ERROR: Bash 4.0 or newer is required"
-**Symptom**: The install.sh script fails on macOS with a bash version error.
-**Cause**: macOS natively ships with Bash 3.2 due to GPL licensing restrictions.
-**Solution**: `brew install bash` or run `/usr/local/bin/bash install.sh`
-
-### 2. "ERROR: Neither 'jq' nor 'python3' was found"  
-**Symptom**: install.sh fails.
-**Solution**: Install jq (`brew install jq` or `sudo apt install jq`) or Python 3.
-
-## Execution Issues
-
-### 1. The Agent Boots but Forgets Its Identity
-**Cause**: 
-A) Ran agent directly instead of `superoc <agent>`
-B) `$PATH` not patched correctly
-C) state.json failed to compile
-
-**Solution**:
-1. Always use: `superoc opencode` not just `opencode`
-2. Check: `echo $PATH | grep .superoc`
-3. Verify: `cat ~/.superoc/state.json`
-
-### 2. "WARNING: Another SuperOC process is compiling state"
-**Cause**: Background post-session audit running.
-**Solution**: Wait up to 5 seconds. Or: `rm -rf /tmp/superoc.lock.*`
-
-### 3. State.json is Corrupted
-**Solution**: 
-```bash
-rm ~/.superoc/state.json
-superoc opencode  # Recompiles automatically
-```
-Or run: `~/.superoc/lib/compile_state.sh`
-
-## Health Check
-Run health check manually:
+Run this first when something's wrong:
 ```bash
 ~/.superoc/lib/monitor_health.sh
 cat ~/.superoc/logs/health.log
 ```
 
+## Common Issues
+
+### 1. "superoc: command not found"
+**Cause**: PATH not set correctly
+**Fix**:
+```bash
+echo 'export PATH="$HOME/.superoc/bin:$PATH"' >> ~/.bashrc
+source ~/.bashrc
+```
+
+### 2. "ERROR: Bash 4.0 or newer is required"
+**Cause**: macOS ships with Bash 3.2
+**Fix**: `brew install bash` or run `/usr/local/bin/bash install.sh`
+
+### 3. "ERROR: Neither 'jq' nor 'python3' was found"
+**Fix**: Install jq
+- macOS: `brew install jq`
+- Ubuntu: `sudo apt install jq`
+
+### 4. "WARNING: Another SuperOC process is compiling state"
+**Cause**: Stale lock file
+**Fix**: `rm -rf ~/.superoc/.lock`
+
+### 5. Agent boots but forgets identity
+**Cause**: 
+- Ran `opencode` instead of `superoc opencode`
+- PATH not patched
+- state.json failed to compile
+
+**Fix**:
+```bash
+# Always use this:
+superoc opencode
+
+# Check PATH:
+echo $PATH | grep .superoc
+
+# Verify compiled state:
+cat ~/.superoc/state.json
+
+# Manually recompile:
+superoc compile
+```
+
+### 6. state.json is corrupted or empty
+**Fix**:
+```bash
+rm ~/.superoc/state.json
+superoc compile
+# Or:
+~/.superoc/lib/compile_state.sh
+```
+
+### 7. Memory not loading after restart
+**Cause**: Templates cleared or state.json not rebuilt
+**Fix**:
+```bash
+# Check templates exist:
+cat ~/.superoc/templates/user.md
+
+# Rebuild state:
+superoc compile
+```
+
+### 8. Remember command not working
+**Fix**: Make sure it's in your PATH
+```bash
+which remember
+# If not found, add to PATH as above
+```
+
 ## Log Locations
-- Audit log: `~/.superoc/logs/audit.log`
-- Health log: `~/.superoc/logs/health.log`
-- State: `~/.superoc/state.json`
+
+| Log | Location |
+|-----|----------|
+| Health | `~/.superoc/logs/health.log` |
+| Audit | `~/.superoc/logs/audit.log` |
+| Compliance | `~/.superoc/monitoring/compliance/` |
+| State | `~/.superoc/state.json` |
+| Backups | `~/.superoc/backups/` |
