@@ -16,7 +16,7 @@ cleanup_and_exit() {
 }
 
 # Create logs directory
-mkdir -p "$LOG_FILE"
+mkdir -p "$LOG_DIR"
 
 log() {
     echo "$(date '+%Y-%m-%d %H:%M:%S'): $1" | tee -a "$LOG_FILE"
