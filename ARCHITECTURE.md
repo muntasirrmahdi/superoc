@@ -97,8 +97,23 @@ While the architecture drastically improves compliance via the OS, it relies on 
 ### 1. The Wrapper Bypass Vulnerability
 The entire system's integrity relies on the user invoking the wrapper script (`superoc`). If a user accidentally runs the underlying agent directly (e.g., calling `opencode` or `claude` bypassing the wrapper bin path), all memory compilation and enforcement are bypassed.
 
-**Mitigation Protocol:** 
-The setup script must map the system's `PATH` to override the default binary, or the wrapper must pass a secure environment variable (e.g., `SUPEROC_ACTIVE=1`) that the agent's internal prompt relies on, breaking gracefully if missing.
+**Mitigation (IMPLEMENTED):** 
+The wrapper sets `SUPEROC_ACTIVE=1` environment variable (line 190 of `bin/superoc`) before launching the agent. This is checked at two levels:
+
+1. **Agent Prompt Guard:** The agent's `AGENTS.md` (injected by adapter) checks for `SUPEROC_ACTIVE=1` at the very top (lines 13-17). If missing, it warns: "WARNING: Running outside SuperOC wrapper. Memory enforcement disabled."
+
+2. **Supervisor Check:** The background supervisor (`lib/background_supervisor.sh`) verifies the agent process has `SUPEROC_ACTIVE=1` in its `/proc/$PID/environ`. If missing after 3 violations, it kills the agent (intervention enabled).
+
+**Bypass Detection:**
+```bash
+# Agent's AGENTS.md checks:
+if environment variable SUPEROC_ACTIVE is not set to 1, you are running OUTSIDE the SuperOC wrapper.
+
+# Supervisor verifies:
+grep -q "SUPEROC_ACTIVE=1" /proc/$AGENT_PID/environ
+```
+
+**What this protects:** Running `opencode` directly (bypassing `superoc`) will trigger warnings and (if supervisor intervention is enabled) terminate the agent after 3 violations.
 
 ### 2. The `trap EXIT` Edge Cases
 The post-flight learning loop depends on catching the agent's exit. However, `trap EXIT` alone is insufficient:
