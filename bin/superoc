@@ -108,7 +108,7 @@ fi
 shift  # Remove agent command from args
 
 # Known agents that require specific adapters
-KNOWN_AGENTS="opencode claude"
+KNOWN_AGENTS="opencode claude claudecode cursor generic"
 
 # Determine the correct adapter
 ADAPTER_FILE="$SUPEROC_DIR/lib/adapters/${AGENT_CMD}.sh"

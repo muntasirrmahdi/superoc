@@ -8,6 +8,13 @@ STATE_FILE="$SUPEROC_DIR/state.json"
 CLAUDE_PROMPT_FILE="$SUPEROC_DIR/.claude_prompt"
 TEMPLATE_FILE="$(dirname "$0")/../../templates/claude.md"
 
+# === SUPEROC_ACTIVE Bypass Guard ===
+if [ "${SUPEROC_ACTIVE:-0}" != "1" ]; then
+    echo "WARNING: SUPEROC_ACTIVE is not set. You are bypassing SuperOC memory enforcement."
+    echo "         Memory state will not be automatically loaded by Claude."
+    echo "         To use SuperOC correctly, run: superoc claude"
+fi
+
 # Create system prompt from state.json using a template
 create_system_prompt() {
     if [ ! -f "$STATE_FILE" ]; then

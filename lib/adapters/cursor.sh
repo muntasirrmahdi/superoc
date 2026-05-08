@@ -8,6 +8,13 @@ SUPEROC_DIR="${SUPEROC_DIR:-$HOME/.superoc}"
 CURSOR_CONFIG_DIR="${CURSOR_CONFIG_DIR:-$HOME/.cursor}"
 CURSOR_PROMPT_FILE="$CURSOR_CONFIG_DIR/prompt.json"
 
+# === SUPEROC_ACTIVE Bypass Guard ===
+if [ "${SUPEROC_ACTIVE:-0}" != "1" ]; then
+    echo "WARNING: SUPEROC_ACTIVE is not set. You are bypassing SuperOC memory enforcement."
+    echo "         Memory state will not be automatically loaded by Cursor."
+    echo "         To use SuperOC correctly, run: superoc cursor"
+fi
+
 # Create a JSON payload for Cursor's prompt configuration
 create_prompt_json() {
     if [ ! -f "$SUPEROC_DIR/state.json" ]; then

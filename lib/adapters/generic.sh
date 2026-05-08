@@ -77,12 +77,25 @@ to_env() {
     done
 }
 
+# --- SUPEROC_ACTIVE Bypass Guard ---
+check_bypass() {
+    if [ "${SUPEROC_ACTIVE:-0}" != "1" ]; then
+        echo "WARNING: SUPEROC_ACTIVE is not set. You are bypassing SuperOC memory enforcement."
+        echo "         Memory state will not be automatically loaded by your agent."
+        echo "         To use SuperOC correctly, run: superoc <agent_name>"
+        echo ""
+    fi
+}
+
 # --- Main Logic ---
 
 usage() {
     echo "Usage: $0 [--format json|md|env]"
     exit 1
 }
+
+# Run bypass check
+check_bypass
 
 FORMAT="md" # Default format
 

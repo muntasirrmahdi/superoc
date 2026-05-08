@@ -4,6 +4,13 @@
 
 set -euo pipefail
 
+# === SUPEROC_ACTIVE Bypass Guard ===
+if [ "${SUPEROC_ACTIVE:-0}" != "1" ]; then
+    echo "WARNING: SUPEROC_ACTIVE is not set. You are bypassing SuperOC memory enforcement."
+    echo "         Memory state will not be automatically loaded by Claude Code."
+    echo "         To use SuperOC correctly, run: superoc claudecode"
+fi
+
 SUPEROC_DIR="${SUPEROC_DIR:-$HOME/.superoc}"
 STATE_FILE="$SUPEROC_DIR/state.json"
 SUPEROC_PROMPT="$SUPEROC_DIR/.system_prompt"

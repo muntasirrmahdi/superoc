@@ -61,11 +61,11 @@ def extract_with_anthropic(api_key: str, transcript: str) -> dict:
 
 def update_memory_files(superoc_dir: str, extraction: dict):
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    
-    learning_model_path = Path(superoc_dir) / "learning-models" / "learning-model.md"
-    understanding_model_path = Path(superoc_dir) / "learning-models" / "understanding-model.md"
-    memory_path = Path(superoc_dir) / "memory" / "memory.md"
-    
+
+    learning_model_path = Path(superoc_dir) / "templates" / "learning-models" / "learning-model.md"
+    understanding_model_path = Path(superoc_dir) / "templates" / "learning-models" / "understanding-model.md"
+    memory_path = Path(superoc_dir) / "memory.md"
+
     learning_model_path.parent.mkdir(parents=True, exist_ok=True)
     understanding_model_path.parent.mkdir(parents=True, exist_ok=True)
     memory_path.parent.mkdir(parents=True, exist_ok=True)
