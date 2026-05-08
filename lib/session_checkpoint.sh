@@ -33,6 +33,12 @@ while true; do
     if [ -f "$SUPEROC_DIR/state.json" ]; then
         cp "$SUPEROC_DIR/state.json" "$CHECKPOINT_FILE" 2>/dev/null || true
         log "Checkpoint saved: $CHECKPOINT_FILE"
+        
+        if [ -f "$SUPEROC_DIR/logs/latest_session.log" ]; then
+            TRANSCRIPT_CHECKPOINT="${CHECKPOINT_FILE/.json/.log}"
+            cp "$SUPEROC_DIR/logs/latest_session.log" "$TRANSCRIPT_CHECKPOINT" 2>/dev/null || true
+            log "Transcript checkpoint saved: $TRANSCRIPT_CHECKPOINT"
+        fi
     else
         log "WARNING: state.json not found, skipping checkpoint"
     fi
