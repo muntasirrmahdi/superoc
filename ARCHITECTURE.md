@@ -158,7 +158,7 @@ Injecting the "MUST READ" rule into wildly different agent configurations (OpenC
 Instead of raw sed/awk replacements on arbitrary config files, the architecture defines a standard adapter interface. Each supported agent gets a dedicated integration script (`adapters/opencode.sh`, `adapters/claudecode.sh`) that understands the exact injection boundary for that specific tool.
 
 ### 6. Runtime Supervision Gap
-The wrapper uses `exec "$AGENT_CMD"` to replace the shell process with the agent. Once `exec` runs, the SuperOC wrapper ceases to exist as a running process. While an `EXIT` trap is set before `exec` (to trigger `post_session_audit.sh`), there is **zero runtime supervision** during the agent's execution.
+The wrapper no longer uses `exec` (which would replace the shell process with the agent). Instead, it launches the agent as a background process via `script -q -c` to capture session transcripts, then waits for the agent to exit. A background supervisor process monitors the agent's PID, checking for `SUPEROC_ACTIVE` compliance and intervening after repeated bypass violations. This ensures the wrapper remains alive during agent execution, enabling runtime supervision and transcript capture.
 
 The compliance verification (lines 40-79 of `bin/superoc`) only checks:
 - `state.json` exists and is valid JSON
