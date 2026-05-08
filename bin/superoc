@@ -147,19 +147,17 @@ else
     exit 1
 fi
 
-    # === FIX 1.5: Verify injection after adapter runs ===
-    if ! "$ADAPTER_FILE" "verify" 2>/dev/null; then
-        echo "WARNING: Could not verify memory injection."
+    # === FIX 1.5: Inject memory directive via adapter and verify ===
+    if [ -n "$ADAPTER_FILE" ]; then
+        # Run adapter to inject memory directive (default action)
+        "$ADAPTER_FILE" 2>/dev/null || true
+        # Verify injection
+        if ! "$ADAPTER_FILE" "verify" 2>/dev/null; then
+            echo "WARNING: Could not verify memory injection."
+        fi
+        # Create flag file to indicate state was prepared for loading
+        touch "$SUPEROC_DIR/state_loaded.flag" 2>/dev/null || true
     fi
-    
-    # Create flag file to indicate state was prepared for loading
-    touch "$SUPEROC_DIR/state_loaded.flag" 2>/dev/null || true
-fi
-    # === FIX 1.5: Verify injection took effect ===
-    if ! "$ADAPTER_FILE" "verify" 2>/dev/null; then
-        echo "WARNING: Could not verify memory injection."
-    fi
-fi
 
 # === FIX 3.4: trap INT in child processes ===
 # 3. Setup Post-Flight Trap (multiple signals)
