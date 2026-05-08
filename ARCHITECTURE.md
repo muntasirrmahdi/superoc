@@ -215,6 +215,6 @@ The post-flight learning loop (`post_session_audit.sh`) expects a session transc
 2. **Agent-specific adapter:** Each adapter (`lib/adapters/*.sh`) should convert agent-specific sessions to `latest_session.log` format
 3. **Symlink approach:** Create symlink from `latest_session.log` to agent's actual session file
 
-**Current Status:** This is a known gap in v0.2.0-alpha. The LLM extraction feature is coded but non-functional until transcript capture is implemented.
+**Current Status:** Fixed in v0.2.0-alpha (Fix 7). Wrapper now uses `script` command to capture session transcript to `latest_session.log`. LLM extraction and checkpointing are now functional.
 
-**TODO:** Implement transcript capture mechanism in wrapper script (see CHANGELOG.md for tracking).
+**Completed:** Implemented transcript capture mechanism in wrapper script (see CHANGELOG.md for details).
