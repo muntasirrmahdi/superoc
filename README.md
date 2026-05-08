@@ -27,7 +27,7 @@ Read the [ARCHITECTURE.md](ARCHITECTURE.md) for a deep dive.
 
 **Cons:**
 * **Terminal Only**: Does not work with GUI editors (Cursor, Windsurf) or web interfaces.
-* **Brittle Exit Traps**: Post-session memory extraction relies on catching bash `EXIT` signals, which fail during hard crashes or power loss.
+* **Brittle Exit Traps**: Post-session memory extraction relies on catching bash `EXIT` signals, which fail during hard crashes or power loss. Periodic session checkpointing (every 5 min) mitigates this by backing up transcripts and state.
 * **Alignment Dependent**: The OS injects the rule, but it still relies on the LLM's behavioral alignment to actually obey the "mandatory" instruction.
 
 ---
@@ -109,7 +109,7 @@ That's it. The memory enforcement is now automatic.
 This is v0.2.0-alpha. Senior engineers will immediately notice these architectural realities:
 
 1. **The Illusion of Guarantee:** There is no physical OS mechanism to force a specific LLM token generation. The "mandatory injection" relies heavily on LLM alignment (penalty avoidance).
-2. **The Brittle `trap EXIT`:** Post-session learning relies on `trap EXIT`, which misses `SIGKILL` and Out-Of-Memory (OOM) crashes.
+2. **The Brittle `trap EXIT`:** Post-session learning relies on `trap EXIT`, which misses `SIGKILL` and Out-Of-Memory (OOM) crashes. A periodic session checkpoint (every 5 min) mitigates this by backing up transcripts and state.json automatically.
 3. **The Bypass Vulnerability:** If a user directly runs `opencode` or `claude` (bypassing the `superoc` wrapper script), the entire memory stack is ignored.
 4. **Learning Loop:** Learning models (learning_model.md, understanding_model.md) are now implemented. True autonomous recursive memory distillation is under active development.
 
