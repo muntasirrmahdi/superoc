@@ -193,10 +193,39 @@ fi
 # 4. Pass control to the underlying agent
 # DO NOT use exec - we need to track agent PID for supervisor
 if command -v "$AGENT_CMD" >/dev/null 2>&1; then
-    # Start agent in background to capture PID
-    "$AGENT_CMD" "$@" &
-    AGENT_PID=$!
-    echo "[Agent] Started $AGENT_CMD (PID: $AGENT_PID)"
+    # === Transcript capture using script command (Fix 7) ===
+    SESSION_LOG="$SUPEROC_DIR/logs/latest_session.log"
+    SCRIPT_BIN=$(which script 2>/dev/null || echo "")
+    TMP_SCRIPT=""
+    
+    if [[ -n "$SCRIPT_BIN" ]]; then
+        # Create temporary script to run agent with arguments
+        TMP_SCRIPT=$(mktemp /tmp/superoc_agent.XXXXXX.sh)
+        cat > "$TMP_SCRIPT" << 'EOF'
+#!/bin/bash
+exec "$@"
+EOF
+        chmod +x "$TMP_SCRIPT"
+        
+        # Construct command string for script -c
+        CMD_STR="\"$TMP_SCRIPT\" \"$AGENT_CMD\""
+        for arg in "$@"; do
+            CMD_STR="$CMD_STR \"$arg\""
+        done
+        
+        # Run via script to capture transcript
+        "$SCRIPT_BIN" -q -c "$CMD_STR" "$SESSION_LOG" &
+        AGENT_PID=$!
+        echo "[Agent] Started $AGENT_CMD via script (PID: $AGENT_PID)"
+        
+        # Cleanup temporary script after agent exits (background)
+        ( wait $AGENT_PID 2>/dev/null; rm -f "$TMP_SCRIPT" ) &
+    else
+        # Fallback: run without transcript capture
+        "$AGENT_CMD" "$@" &
+        AGENT_PID=$!
+        echo "[Agent] Started $AGENT_CMD (PID: $AGENT_PID) [WARNING: transcript capture not available]"
+    fi
     
     # === FIX 6.1: Start background supervisor with agent PID ===
     if [[ -x "$SUPEROC_DIR/lib/background_supervisor.sh" ]]; then
@@ -213,6 +242,9 @@ if command -v "$AGENT_CMD" >/dev/null 2>&1; then
     if [[ -n "${SUPERVISOR_PID:-}" ]] && kill -0 "$SUPERVISOR_PID" 2>/dev/null; then
         kill "$SUPERVISOR_PID" 2>/dev/null || true
     fi
+    
+    # Cleanup temporary script if not already removed
+    rm -f "${TMP_SCRIPT:-}" 2>/dev/null || true
     
     exit $EXIT_CODE
 else

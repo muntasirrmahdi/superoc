@@ -20,6 +20,9 @@
 - Templates moved to proper locations (bin/, lib/, templates/)
 - Wikilinks parser uses JSON configuration for flexibility
 
+### Fixed
+- Fix #7: Transcript capture using script command (wrapper now records session to latest_session.log)
+
 ### Known Limitations
 - Wikilinks parser requires configuration file at ~/.superoc/wikilinks.json
 - Backup system requires manual cron setup for automation
