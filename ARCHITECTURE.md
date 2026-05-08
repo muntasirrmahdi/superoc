@@ -158,17 +158,23 @@ The compliance verification (lines 40-79 of `bin/superoc`) only checks:
 - Users should alias the agent command to run through `superoc`
 - Future versions may explore `ptrace` or LD_PRELOAD to enforce loading, though these are complex and platform-specific
 
-### 7. Learning Loop Stub (v0.2.0-alpha)
-The architecture describes a "Post-Flight Trap" with "Background Distillation" using an LLM to extract facts from session transcripts. In the current v0.2.0-alpha implementation, this is a **stub**:
+### 7. Learning Loop (v0.2.0-alpha - LIVE)
 
-- `lib/post_session_audit.sh` (lines 54-60): Logs "LLM extraction simulated" but performs no actual LLM call
-- `lib/extract_session.sh`: Uses keyword matching (grep) for predefined terms like "FIXED", "IMPLEMENTED" - not semantic understanding
-- `lib/sync_knowledge.sh`: Explicitly labeled as a placeholder for users to integrate their own logic
+The architecture describes a "Post-Flight Trap" with "Background Distillation" using an LLM to extract facts from session transcripts. In the current v0.2.0-alpha implementation, this is **LIVE**:
 
-**What works:** Basic keyword extraction and session logging.
-**What does not work yet:** Automatic memory updates, semantic fact extraction, LLM-powered learning.
+- `lib/llm_extract.py`: Actual LLM-powered semantic extraction using API calls
+- `lib/post_session_audit.sh` (lines 54-60): Wires `llm_extract.py` for real extraction
+- `lib/extract_session.sh`: Keyword matching (grep) as fallback for basic analysis
+
+**What works:** LLM-powered semantic fact extraction, automatic memory updates, learning model distillation.
+**What does not work yet:** Advanced reasoning, multi-hop inference, complex pattern recognition.
+
+**Implementation Details:**
+- `llm_extract.py` reads session transcripts and calls LLM API for semantic understanding
+- Extracted facts are atomically written to source markdown files (Memory, Learning Models)
+- `post_session_audit.sh` orchestrates the extraction pipeline after session ends
 
 **Mitigation Protocol:**
-- This is documented as a known limitation in the CHANGELOG and README
-- Users wanting automatic memory updates should implement `sync_knowledge.sh` with their preferred LLM API
-- The `scripts/session-end-updater.sh` provides a basic template for appending session counts to `learning-model.md`
+- Documented as LIVE feature in CHANGELOG.md
+- Users can customize `llm_extract.py` with their preferred LLM endpoint
+- Fallback to keyword extraction if LLM API unavailable
