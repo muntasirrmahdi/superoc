@@ -164,7 +164,7 @@ The compliance verification (lines 40-79 of `bin/superoc`) only checks:
 - `state.json` exists and is valid JSON
 - `AGENTS.md` exists and contains "MANDATORY FIRST ACTION"
 
-**What it does NOT verify:** Whether the agent actually reads `state.json` or follows the injected directive. The agent could completely ignore the memory state, and SuperOC would never know.
+**What it does NOT verify:** Whether the agent actually reads `state.json` or follows the injected directive. The agent could completely ignore the memory state. SuperOC can detect bypass violations (via supervisor and audit logs) but cannot force compliance.
 
 **Bypass Vulnerability:** If a user runs the agent directly (e.g., `opencode` instead of `superoc opencode`), all memory compilation, injection, and verification are skipped entirely.
 
