@@ -179,13 +179,6 @@ if [[ -x "$SUPEROC_DIR/lib/monitor_health.sh" ]]; then
     "$SUPEROC_DIR/lib/monitor_health.sh" 2>/dev/null || true
 fi
 
-# === FIX 6.1: Start background supervisor ===
-if [[ -x "$SUPEROC_DIR/lib/background_supervisor.sh" ]]; then
-    "$SUPEROC_DIR/lib/background_supervisor.sh" &
-    SUPERVISOR_PID=$!
-    echo "[Supervisor] Background supervisor started (PID: $SUPERVISOR_PID)"
-fi
-
 # === FIX 7.1: Set bypass guard environment variable ===
 export SUPEROC_ACTIVE=1
 echo "[Guard] Bypass guard active (SUPEROC_ACTIVE=1)"
@@ -198,13 +191,31 @@ if [[ -x "$SUPEROC_DIR/lib/session_checkpoint.sh" ]]; then
 fi
 
 # 4. Pass control to the underlying agent
-# Use exec to replace the shell process
+# DO NOT use exec - we need to track agent PID for supervisor
 if command -v "$AGENT_CMD" >/dev/null 2>&1; then
-    exec "$AGENT_CMD" "$@"
+    # Start agent in background to capture PID
+    "$AGENT_CMD" "$@" &
+    AGENT_PID=$!
+    echo "[Agent] Started $AGENT_CMD (PID: $AGENT_PID)"
+    
+    # === FIX 6.1: Start background supervisor with agent PID ===
+    if [[ -x "$SUPEROC_DIR/lib/background_supervisor.sh" ]]; then
+        "$SUPEROC_DIR/lib/background_supervisor.sh" "$AGENT_PID" &
+        SUPERVISOR_PID=$!
+        echo "[Supervisor] Background supervisor started (PID: $SUPERVISOR_PID, watching: $AGENT_PID)"
+    fi
+    
+    # Wait for agent to finish
+    wait $AGENT_PID
+    EXIT_CODE=$?
+    
+    # Stop supervisor
+    if [[ -n "${SUPERVISOR_PID:-}" ]] && kill -0 "$SUPERVISOR_PID" 2>/dev/null; then
+        kill "$SUPERVISOR_PID" 2>/dev/null || true
+    fi
+    
+    exit $EXIT_CODE
 else
-    # Try to find the agent in PATH or custom locations
-    exec "$@" || {
-        echo "ERROR: Agent '$AGENT_CMD' not found."
-        exit 1
-    }
+    echo "ERROR: Agent '$AGENT_CMD' not found."
+    exit 1
 fi
