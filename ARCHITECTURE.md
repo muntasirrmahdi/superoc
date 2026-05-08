@@ -193,3 +193,28 @@ The architecture describes a "Post-Flight Trap" with "Background Distillation" u
 - Documented as LIVE feature in CHANGELOG.md
 - Users can customize `llm_extract.py` with their preferred LLM endpoint
 - Fallback to keyword extraction if LLM API unavailable
+
+### 8. Transcript Path & Session Logging Gap
+
+The post-flight learning loop (`post_session_audit.sh`) expects a session transcript at `$SUPEROC_DIR/logs/latest_session.log` (line 70). Similarly, `session_checkpoint.sh` expects this file for checkpointing (line 37).
+
+**The Gap:** The wrapper script (`bin/superoc`) does NOT capture agent output to create `latest_session.log`. The agent is launched in background (line 197) with output going to stdout/stderr, not captured to a file.
+
+**Actual Session Storage (Agent-Specific):**
+- **OpenCode:** Sessions stored as markdown in `~/.opencode/sessions/session-*.md`
+- **Claude Code:** Sessions stored in its internal format
+- **Generic agents:** Varies by tool
+
+**Impact:**
+- `post_session_audit.sh` will log "WARNING: No session transcript found" (line 72)
+- LLM extraction (`llm_extract.py`) never runs because transcript is missing
+- `session_checkpoint.sh` skips transcript checkpointing (line 37-41)
+
+**Workarounds:**
+1. **Wrapper output capture:** Modify wrapper to use `script` command or redirect output to `$SUPEROC_DIR/logs/latest_session.log`
+2. **Agent-specific adapter:** Each adapter (`lib/adapters/*.sh`) should convert agent-specific sessions to `latest_session.log` format
+3. **Symlink approach:** Create symlink from `latest_session.log` to agent's actual session file
+
+**Current Status:** This is a known gap in v0.2.0-alpha. The LLM extraction feature is coded but non-functional until transcript capture is implemented.
+
+**TODO:** Implement transcript capture mechanism in wrapper script (see CHANGELOG.md for tracking).
