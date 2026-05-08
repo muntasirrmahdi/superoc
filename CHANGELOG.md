@@ -24,6 +24,11 @@
 - Wikilinks parser requires configuration file at ~/.superoc/wikilinks.json
 - Backup system requires manual cron setup for automation
 
+### LLM Extraction Status
+- LLM extraction is LIVE via llm_extract.py (wired into post_session_audit.sh)
+- Uses actual LLM API calls for semantic understanding (not keyword matching)
+- See lib/llm_extract.py for implementation details
+
 ---
 
 ## [0.1.1-alpha] - 2026-05-06
@@ -57,7 +62,6 @@
 - Issue #8.1: OpenCode adapter idempotent
 
 ### Known Limitations
-- LLM extraction is stub only (v0.2 feature)
 - Cron-based checkpoint not fully implemented
 - Limited agent adapter coverage
 
