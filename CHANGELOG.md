@@ -22,6 +22,10 @@
 
 ### Fixed
 - Fix #7: Transcript capture using script command (wrapper now records session to latest_session.log)
+- Fix #8: llm_extract.py path mismatch - aligned with compile_state.sh templates/ directory
+- Fix #9: load_memory.sh literal variable writing - fixed double quote interpolation
+- Fix #10: SUPEROC_ACTIVE bypass guard missing from generic and other adapters
+- Fix #11: KNOWN_AGENTS outdated - updated to include all 5 adapters
 
 ### Known Limitations
 - Wikilinks parser requires configuration file at ~/.superoc/wikilinks.json
