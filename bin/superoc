@@ -57,13 +57,16 @@ fi
 # Determine compliance file based on agent
 AGENT_CMD_NAME="${1:-opencode}"
 case "$AGENT_CMD_NAME" in
+    opencode)
+        OPENCODE_CONFIG_DIR="${OPENCODE_CONFIG_DIR:-$HOME/.config/opencode}"
+        AGENTS_FILE="$OPENCODE_CONFIG_DIR/AGENTS.md"
+        ;;
     claude*)
         AGENT_CONFIG_DIR="$HOME/.config/claudecode"
         AGENTS_FILE="$AGENT_CONFIG_DIR/config.json" # Adjust based on agent
         ;;
     *)
-        OPENCODE_CONFIG_DIR="${OPENCODE_CONFIG_DIR:-$HOME/.config/opencode}"
-        AGENTS_FILE="$OPENCODE_CONFIG_DIR/AGENTS.md"
+        AGENTS_FILE=""
         ;;
 esac
 
