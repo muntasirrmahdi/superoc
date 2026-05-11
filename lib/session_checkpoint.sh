@@ -43,6 +43,5 @@ while true; do
         log "WARNING: state.json not found, skipping checkpoint"
     fi
     
-    sleep "$CHECKPOINT_INTERVAL" &
-    wait $!
+    sleep "$CHECKPOINT_INTERVAL"
 done

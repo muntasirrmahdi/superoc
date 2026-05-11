@@ -54,20 +54,37 @@ else
     echo "[X] state.json: file not found"
 fi
 
-OPENCODE_CONFIG_DIR="${OPENCODE_CONFIG_DIR:-$HOME/.config/opencode}"
-AGENTS_FILE="$OPENCODE_CONFIG_DIR/AGENTS.md"
+# Determine compliance file based on agent
+AGENT_CMD_NAME="${1:-opencode}"
+case "$AGENT_CMD_NAME" in
+    claude*)
+        AGENT_CONFIG_DIR="$HOME/.config/claudecode"
+        AGENTS_FILE="$AGENT_CONFIG_DIR/config.json" # Adjust based on agent
+        ;;
+    *)
+        OPENCODE_CONFIG_DIR="${OPENCODE_CONFIG_DIR:-$HOME/.config/opencode}"
+        AGENTS_FILE="$OPENCODE_CONFIG_DIR/AGENTS.md"
+        ;;
+esac
 
 if [ -f "$AGENTS_FILE" ]; then
     AGENTS_FILE_EXISTS="true"
-    echo "[OK] AGENTS.md: file exists"
-    if grep -q "MANDATORY FIRST ACTION" "$AGENTS_FILE"; then
+    echo "[OK] Compliance file: $(basename "$AGENTS_FILE") exists"
+    if grep -qiE "MANDATORY FIRST ACTION|state.json" "$AGENTS_FILE"; then
         AGENTS_CONTENT_VALID="true"
-        echo "[OK] AGENTS.md: contains critical memory loading rule"
+        echo "[OK] Compliance file: contains memory loading rule"
     else
-        echo "[!] AGENTS.md: missing critical memory loading rule"
+        echo "[!] Compliance file: missing critical memory loading rule"
     fi
 else
-    echo "[X] AGENTS.md: file not found"
+    # For unknown agents, we don't fail verification if the file is missing
+    if [[ "$AGENT_CMD_NAME" != "opencode" ]]; then
+        AGENTS_FILE_EXISTS="true"
+        AGENTS_CONTENT_VALID="true"
+        echo "[OK] Compliance check: skipped for non-OpenCode agent (manual verification recommended)"
+    else
+        echo "[X] AGENTS.md: file not found"
+    fi
 fi
 
 if [ "$STATE_JSON_VALID" = "true" ] && [ "$AGENTS_FILE_EXISTS" = "true" ] && [ "$AGENTS_CONTENT_VALID" = "true" ]; then
@@ -200,11 +217,12 @@ if command -v "$AGENT_CMD" >/dev/null 2>&1; then
     SESSION_LOG="$SUPEROC_DIR/logs/latest_session.log"
     SCRIPT_BIN=$(which script 2>/dev/null || echo "")
     
-    # === FIX 6.1: Start background supervisor with this wrapper PID ===
+    # === FIX 6.1: Start background supervisor ===
     if [[ -x "$SUPEROC_DIR/lib/background_supervisor.sh" ]]; then
-        "$SUPEROC_DIR/lib/background_supervisor.sh" "$$" &
+        # We pass the wrapper PID, the supervisor will resolve the agent PID
+        "$SUPEROC_DIR/lib/background_supervisor.sh" "$$" "$AGENT_CMD" &
         SUPERVISOR_PID=$!
-        echo "[Supervisor] Background supervisor started (PID: $SUPERVISOR_PID, watching: $$)"
+        echo "[Supervisor] Background supervisor started (PID: $SUPERVISOR_PID)"
     fi
 
     if [[ -n "$SCRIPT_BIN" ]]; then

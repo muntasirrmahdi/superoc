@@ -98,7 +98,7 @@ While the architecture drastically improves compliance via the OS, it relies on 
 The entire system's integrity relies on the user invoking the wrapper script (`superoc`). If a user accidentally runs the underlying agent directly (e.g., calling `opencode` or `claude` bypassing the wrapper bin path), all memory compilation and enforcement are bypassed.
 
 **Mitigation (IMPLEMENTED):** 
-The wrapper sets `SUPEROC_ACTIVE=1` environment variable (line 190 of `bin/superoc`) before launching the agent. This is checked at two levels:
+The wrapper sets `SUPEROC_ACTIVE=1` environment variable (in the wrapper initialization section) before launching the agent. This is checked at two levels:
 
 1. **Agent Prompt Guard:** The agent's `AGENTS.md` (injected by adapter) checks for `SUPEROC_ACTIVE=1` at the very top (lines 13-17). If missing, it warns: "WARNING: Running outside SuperOC wrapper. Memory enforcement disabled."
 
