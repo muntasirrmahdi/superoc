@@ -26,6 +26,10 @@
 - Fix #9: load_memory.sh literal variable writing - fixed double quote interpolation
 - Fix #10: SUPEROC_ACTIVE bypass guard missing from generic and other adapters
 - Fix #11: KNOWN_AGENTS outdated - updated to include all 5 adapters
+- Fix #12: TTY Stabilization - `script` moved to foreground to prevent ANSI mouse slop
+- Fix #13: Lifecycle Enforcement - `bin/opencode` refactored to always use `superoc` wrapper
+- Fix #14: Documentation - Standardized binary names and usage instructions across all .md files
+- Fix #15: Typos - Fixed double 'User: User:' in startup logs
 
 ### Known Limitations
 - Wikilinks parser requires configuration file at ~/.superoc/wikilinks.json

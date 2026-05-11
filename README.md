@@ -28,6 +28,7 @@ Read the [ARCHITECTURE.md](ARCHITECTURE.md) for a deep dive.
 **Cons:**
 * **Terminal Only**: Does not work with GUI editors (Cursor, Windsurf) or web interfaces.
 * **Brittle Exit Traps**: Post-session memory extraction relies on catching bash `EXIT` signals, which fail during hard crashes or power loss. Periodic session checkpointing (every 5 min) mitigates this by backing up transcripts and state.
+* **Deterministic TTY**: Uses `script` in the foreground to stabilize terminal input and prevent mouse tracking slop.
 * **Alignment Dependent**: The OS injects the rule, but it still relies on the LLM's behavioral alignment to actually obey the "mandatory" instruction.
 
 ---
@@ -97,10 +98,9 @@ The system maintains these components:
 - `logs/` - Daily session logs (last 7 days)
 ### Step 3: Start Using It
 ```bash
-superoc opencode
+opencode
 ```
-
-That's it. The memory enforcement is now automatic.
+*(Or use `superoc <agent>` for any other agent)*
 
 ---
 

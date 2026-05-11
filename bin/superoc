@@ -10,7 +10,7 @@ SHELL_ENV="$SUPEROC_DIR/shell.env"
 MONITORING_DIR="$SUPEROC_DIR/monitoring"
 COMPLIANCE_LOG="$MONITORING_DIR/compliance/startup-$(date +%Y%m%d_%H%M%S).log"
 
-mkdir -p "$MONITORING_DIR/logs" "$MONITORING_DIR/alerts" "$MONITORING_DIR/compliance"
+mkdir -p "$MONITORING_DIR/logs" "$MONITORING_DIR/alerts" "$MONITORING_DIR/compliance" "$SUPEROC_DIR/logs"
 
 # === Load memory state ===
 if [ -f "$SHELL_ENV" ]; then
@@ -25,13 +25,13 @@ fi
 
 # === Display memory status ===
 if [ "${SUPEROC_MEMORY_READY:-false}" = "true" ]; then
-    echo "[ SuperOC Memory: LOADED ✓"
+    echo "[ SuperOC Memory: LOADED ]"
     if [ -n "$SUPEROC_USER_NAME" ]; then
-        echo "User: User: $SUPEROC_USER_NAME"
+        echo "User: $SUPEROC_USER_NAME"
     fi
     if [ -f "$SUPEROC_DIR/lib/sync_knowledge.sh" ] && [ -x "$SUPEROC_DIR/lib/sync_knowledge.sh" ]; then
         "$SUPEROC_DIR/lib/sync_knowledge.sh" > /dev/null 2>&1 &
-        echo "[AI] SuperOC Intelligence: SYNCHRONIZING (Background) ✓"
+        echo "[AI] SuperOC Intelligence: SYNCHRONIZING (Background) [OK]"
     fi
 fi
 
@@ -98,11 +98,16 @@ echo "[LOG] Log saved to: $COMPLIANCE_LOG"
 # === FIX 1.2: Exit if adapter missing for known agents ===
 AGENT_CMD="${1:-}"
 
-if [[ -z "$AGENT_CMD" ]]; then
-    echo "ERROR: No agent command provided."
+if [[ -z "$AGENT_CMD" || "$AGENT_CMD" == "--help" || "$AGENT_CMD" == "-h" ]]; then
+    echo "SuperOC Memory Stack Wrapper"
     echo "Usage: superoc <agent_command> [args...]"
     echo "Example: superoc opencode"
-    exit 1
+    echo ""
+    echo "Available commands:"
+    echo "  compile             Manually compile state.json"
+    echo "  health              Run health checks"
+    echo "  <agent>             Run an agent with memory enforcement"
+    exit 0
 fi
 
 shift  # Remove agent command from args

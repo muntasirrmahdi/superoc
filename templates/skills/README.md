@@ -4,8 +4,8 @@ Create your own skills in this folder. Follow the format:
 
 ```
 ~/.superoc/skills/
-├── <skill-name>/
-│   └── SKILL.md
+|-- <skill-name>/
+|   `-- SKILL.md
 ```
 
 ## Example SKILL.md

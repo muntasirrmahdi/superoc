@@ -70,5 +70,3 @@ fi
 } > "$SHELL_ENV"
 
 chmod 600 "$SHELL_ENV" 2>/dev/null || true
-
-exit 0

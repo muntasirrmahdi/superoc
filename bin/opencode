@@ -1,84 +1,19 @@
 #!/usr/bin/env bash
-# opencode - SuperOC wrapped version
+# bin/opencode - Convenience wrapper for SuperOC
+# This script ensures that 'opencode' is always run through 'superoc'
+# to maintain intercept/inject/run/extract lifecycle.
 
-# Find the real opencode binary (not this wrapper)
-ORIGINAL_BIN=""
-for path in "$HOME/.opencode/bin/opencode" "/usr/local/bin/opencode" "/opt/homebrew/bin/opencode"; do
-    if [ -x "$path" ]; then
-        ORIGINAL_BIN="$path"
-        break
-    fi
-done
+BIN_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SUPEROC_BIN="$BIN_DIR/superoc"
 
-# If not found in common paths, try which
-if [ -z "$ORIGINAL_BIN" ]; then
-    ORIGINAL_BIN="$(command -v opencode 2>/dev/null)"
-fi
-
-SUPEROC_DIR="${SUPEROC_DIR:-$HOME/.superoc}"
-STATE_FILE="$SUPEROC_DIR/state.json"
-SHELL_ENV="$SUPEROC_DIR/shell.env"
-MONITORING_DIR="$SUPEROC_DIR/monitoring"
-COMPLIANCE_LOG="$MONITORING_DIR/compliance/startup-$(date +%Y%m%d_%H%M%S).log"
-
-mkdir -p "$MONITORING_DIR/logs" "$MONITORING_DIR/alerts" "$MONITORING_DIR/compliance"
-
-if [ -f "$SHELL_ENV" ]; then
-    source "$SHELL_ENV"
-fi
-
-if [ "${SUPEROC_MEMORY_READY:-false}" != "true" ]; then
-    if [ -x "$SUPEROC_DIR/lib/load_memory.sh" ]; then
-        source "$SUPEROC_DIR/lib/load_memory.sh" 2>/dev/null || true
+if [[ -x "$SUPEROC_BIN" ]]; then
+    exec "$SUPEROC_BIN" opencode "$@"
+else
+    # Fallback to finding superoc in PATH
+    if command -v superoc >/dev/null 2>&1; then
+        exec superoc opencode "$@"
+    else
+        echo "ERROR: superoc binary not found."
+        exit 1
     fi
 fi
-
-if [ "$SUPEROC_MEMORY_READY" = "true" ]; then
-    echo "SuperOC Memory: LOADED"
-    if [ -n "$SUPEROC_USER_NAME" ]; then
-        echo "User: $SUPEROC_USER_NAME"
-    fi
-    if [ -f "$SUPEROC_DIR/lib/sync_knowledge.sh" ] && [ -x "$SUPEROC_DIR/lib/sync_knowledge.sh" ]; then
-        "$SUPEROC_DIR/lib/sync_knowledge.sh" > /dev/null 2>&1 &
-        echo "SuperOC Intelligence: SYNCHRONIZING"
-    fi
-fi
-
-STATE_JSON_VALID="false"
-AGENTS_EXISTS="false"
-AGENTS_VALID="false"
-
-if [ -f "$STATE_FILE" ]; then
-    if jq empty "$STATE_FILE" 2>/dev/null; then
-        STATE_JSON_VALID="true"
-    fi
-fi
-
-OPENCODE_CONFIG="${OPENCODE_CONFIG_DIR:-$HOME/.config/opencode}"
-AGENTS_FILE="$OPENCODE_CONFIG/AGENTS.md"
-
-if [ -f "$AGENTS_FILE" ]; then
-    AGENTS_EXISTS="true"
-    if grep -q "MANDATORY FIRST ACTION" "$AGENTS_FILE"; then
-        AGENTS_VALID="true"
-    fi
-fi
-
-STATUS="verified"
-if [ "$STATE_JSON_VALID" != "true" ] || [ "$AGENTS_EXISTS" != "true" ] || [ "$AGENTS_VALID" != "true" ]; then
-    STATUS="partial"
-fi
-
-{
-    echo "=== SuperOC Verification ==="
-    echo "Timestamp: $(date -Iseconds)"
-    echo "Status: $STATUS"
-} > "$COMPLIANCE_LOG"
-
-if [ -z "$ORIGINAL_BIN" ]; then
-    echo "ERROR: opencode binary not found"
-    echo "Install opencode first from opencode.ai"
-    exit 1
-fi
-
-exec "$ORIGINAL_BIN" "$@"

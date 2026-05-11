@@ -44,26 +44,26 @@ To open-source this, the repository should be structured as a drop-in installati
 
 ```text
 superoc-memory-stack/
-├── install.sh                  # Sets up directories, crons, and aliases
-├── bin/
-│   ├── superoc                 # The main bash wrapper (intercepts the agent CLI)
-│   └── remember                # CLI tool to save memories
-├── lib/
-│   ├── compile_state.sh        # Compiles markdown into state.json safely
-│   ├── load_memory.sh          # Loads state.json into agent context
-│   ├── wikilinks_parser.py    # Parses [[wikilinks]] into knowledge graph
-│   └── monitor_health.sh       # Background daemon checking file locks and PIDs
-├── templates/
-│   ├── USER.md                 # Template: Who the user is
-│   ├── IDENTITY.md             # Template: Who the agent is
-│   ├── MEMORY.md               # Template: Long-term facts
-│   ├── AGENTS.md               # Template: Agent instructions with state enforcement
-│   └── learning-models/
-│       ├── learning-model.md    # Template: What the agent learned
-│       └── understanding-model.md # Template: Agent's understanding of user
-├── tests/
-│   └── test_compile_state.sh  # Verification script
-└── README.md                   # Installation & Architecture Guide
+|-- install.sh                  # Sets up directories, crons, and aliases
+|-- bin/
+|   |-- superoc                 # The main bash wrapper (intercepts the agent CLI)
+|   `-- remember                # CLI tool to save memories
+|-- lib/
+|   |-- compile_state.sh        # Compiles markdown into state.json safely
+|   |-- load_memory.sh          # Loads state.json into agent context
+|   |-- wikilinks_parser.py    # Parses [[wikilinks]] into knowledge graph
+|   `-- monitor_health.sh       # Background daemon checking file locks and PIDs
+|-- templates/
+|   |-- USER.md                 # Template: Who the user is
+|   |-- IDENTITY.md             # Template: Who the agent is
+|   |-- MEMORY.md               # Template: Long-term facts
+|   |-- AGENTS.md               # Template: Agent instructions with state enforcement
+|   `-- learning-models/
+|       |-- learning-model.md    # Template: What the agent learned
+|       `-- understanding-model.md # Template: Agent's understanding of user
+|-- tests/
+|   `-- test_compile_state.sh  # Verification script
+`-- README.md                   # Installation & Architecture Guide
 ```
 
 The compiled `state.json` contains:
@@ -157,8 +157,16 @@ Injecting the "MUST READ" rule into wildly different agent configurations (OpenC
 **Mitigation Protocol:**
 Instead of raw sed/awk replacements on arbitrary config files, the architecture defines a standard adapter interface. Each supported agent gets a dedicated integration script (`adapters/opencode.sh`, `adapters/claudecode.sh`) that understands the exact injection boundary for that specific tool.
 
-### 6. Runtime Supervision Gap
-The wrapper no longer uses `exec` (which would replace the shell process with the agent). Instead, it launches the agent as a background process via `script -q -c` to capture session transcripts, then waits for the agent to exit. A background supervisor process monitors the agent's PID, checking for `SUPEROC_ACTIVE` compliance and intervening after repeated bypass violations. This ensures the wrapper remains alive during agent execution, enabling runtime supervision and transcript capture.
+### 6. Runtime Supervision & TTY Stabilization
+The wrapper no longer uses `exec` (which would replace the shell process with the agent). Instead, it launches the agent as a background process via `script -q -c` to capture session transcripts, then waits for the agent to exit. 
+
+**TTY Stabilization (STABLE):**
+To prevent ANSI escape sequence "slop" (mouse tracking data echoing in terminal), the `script` command is run in the foreground. This ensures absolute TTY control and prevents contention between the agent and the wrapper.
+
+**The `opencode` Shim:**
+For convenience, the project includes a `bin/opencode` shim. This is a thin wrapper that invokes `superoc opencode`. This ensures that even if a user types `opencode` directly, the full intercept/run/extract lifecycle is enforced.
+
+A background supervisor process monitors the agent's PID, checking for `SUPEROC_ACTIVE` compliance and intervening after repeated bypass violations. This ensures the wrapper remains alive during agent execution, enabling runtime supervision and transcript capture.
 
 The compliance verification (lines 40-79 of `bin/superoc`) only checks:
 - `state.json` exists and is valid JSON
